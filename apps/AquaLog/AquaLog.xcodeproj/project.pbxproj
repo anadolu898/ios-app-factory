@@ -156,20 +156,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		4AD906B702DDD0AE44B6B56D /* History */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = History;
-			sourceTree = "<group>";
-		};
-		702CEA8ECCC56D32B4F9AB19 /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
 		751B657E43B257659C0393B9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,10 +209,8 @@
 				1B636CACFD6ED38AEA545DDF /* SettingsView.swift */,
 				42C74E518854F268909BBCFB /* Components */,
 				EA4AFE36C3A9BB3B7570A25E /* Dashboard */,
-				4AD906B702DDD0AE44B6B56D /* History */,
 				B224AC2194FA2D12D0D5572F /* Onboarding */,
 				78FAAD6926E4CB35E8CC2DF4 /* Paywall */,
-				702CEA8ECCC56D32B4F9AB19 /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -563,9 +547,9 @@
 				CODE_SIGN_ENTITLEMENTS = AquaLogWidgets/AquaLogWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AquaLogWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AquaLog Widgets";
-				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -584,9 +568,9 @@
 				CODE_SIGN_ENTITLEMENTS = AquaLogWidgets/AquaLogWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AquaLogWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AquaLog Widgets";
-				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

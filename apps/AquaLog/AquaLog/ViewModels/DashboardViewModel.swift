@@ -43,12 +43,35 @@ final class DashboardViewModel {
         todayTotal >= dailyGoal
     }
 
+    // MARK: - Caffeine Tracking
+
+    var todayCaffeineMG: Double {
+        todayLogs.reduce(0.0) { total, log in
+            total + CaffeineInfo.caffeinePerServing(beverage: log.beverageType, amountML: log.amount)
+        }
+    }
+
+    var caffeineStatus: (message: String, severity: CaffeineInfo.CaffeineSeverity)? {
+        CaffeineInfo.statusMessage(totalCaffeineMG: todayCaffeineMG)
+    }
+
+    // MARK: - Streaks
+
+    var currentStreak: Int {
+        settings?.currentStreak ?? 0
+    }
+
+    var longestStreak: Int {
+        settings?.longestStreak ?? 0
+    }
+
     // MARK: - Setup
 
     func setup(modelContext: ModelContext) {
         self.modelContext = modelContext
         fetchTodayLogs()
         fetchSettings()
+        updateStreak()
     }
 
     // MARK: - Fetch
@@ -110,7 +133,9 @@ final class DashboardViewModel {
         }
 
         fetchTodayLogs()
+        updateStreak()
         syncToWidgets()
+        scheduleRemindersIfNeeded()
         triggerHaptic()
     }
 
@@ -135,6 +160,53 @@ final class DashboardViewModel {
         defaults?.set(todayTotal, forKey: "todayIntakeML")
         defaults?.set(dailyGoal, forKey: "dailyGoalML")
         WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    // MARK: - Streak Management
+
+    private func updateStreak() {
+        guard let settings, let modelContext else { return }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+
+        // Check if we met today's goal
+        if todayTotal >= dailyGoal {
+            if let lastDate = settings.lastGoalMetDate {
+                let lastDay = calendar.startOfDay(for: lastDate)
+                if calendar.isDate(lastDay, inSameDayAs: today) {
+                    // Already updated today
+                    return
+                }
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+                if calendar.isDate(lastDay, inSameDayAs: yesterday) {
+                    // Consecutive day — extend streak
+                    settings.currentStreak += 1
+                } else {
+                    // Streak broken, start new
+                    settings.currentStreak = 1
+                }
+            } else {
+                settings.currentStreak = 1
+            }
+
+            settings.lastGoalMetDate = .now
+            settings.longestStreak = max(settings.longestStreak, settings.currentStreak)
+            try? modelContext.save()
+        }
+    }
+
+    // MARK: - Notification Scheduling
+
+    private func scheduleRemindersIfNeeded() {
+        guard let settings, settings.reminderEnabled else { return }
+        Task {
+            await NotificationManager.shared.scheduleReminders(
+                intervalMinutes: settings.reminderIntervalMinutes,
+                startHour: settings.reminderStartHour,
+                endHour: settings.reminderEndHour
+            )
+        }
     }
 
     // MARK: - Haptics
