@@ -9,6 +9,9 @@ struct MainTabView: View {
             Tab(String(localized: "History"), systemImage: "calendar") {
                 HistoryView()
             }
+            Tab(String(localized: "Insights"), systemImage: "heart.text.clipboard") {
+                HealthTimelineView()
+            }
             Tab(String(localized: "Settings"), systemImage: "gearshape.fill") {
                 SettingsView()
             }

@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.anadolu898
   deploymentTarget:
     iOS: "18.0"
+    watchOS: "11.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
 
@@ -76,6 +77,48 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
     entitlements:
       path: AquaLogWidgets/AquaLogWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.anadolu898.aqualog
+
+  AquaLogWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: AquaLogWatch
+        excludes:
+          - WatchComplication.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.watch
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.anadolu898.aqualog
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    entitlements:
+      path: AquaLogWatch/AquaLogWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.anadolu898.aqualog
+
+  AquaLogWatchWidgets:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: AquaLogWatch/WatchComplication.swift
+      - path: AquaLogWatch/WatchDashboardView.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.watch.widgets
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Automatic
+    entitlements:
+      path: AquaLogWatch/AquaLogWatch.entitlements
       properties:
         com.apple.security.application-groups:
           - group.com.anadolu898.aqualog

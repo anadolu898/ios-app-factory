@@ -148,7 +148,7 @@ final class DashboardViewModel {
         updateStreak()
         syncToWidgets()
         saveToHealthKit(amount: amount)
-        scheduleRemindersIfNeeded()
+        scheduleSmartNotifications()
         triggerHaptic()
     }
 
@@ -209,11 +209,26 @@ final class DashboardViewModel {
         }
     }
 
-    // MARK: - Notification Scheduling
+    // MARK: - Smart Notifications
 
-    private func scheduleRemindersIfNeeded() {
+    private func scheduleSmartNotifications() {
         guard let settings, settings.reminderEnabled else { return }
         Task {
+            // Schedule context-aware notification
+            await SmartNotificationManager.shared.scheduleSmartReminders(
+                settings: settings,
+                todayProgress: todayProgress,
+                todayCaffeineMG: todayCaffeineMG
+            )
+
+            // Check for milestone notification
+            if goalReached {
+                await SmartNotificationManager.shared.scheduleMilestoneNotification(
+                    streakDays: settings.currentStreak
+                )
+            }
+
+            // Also keep the regular interval reminders
             await NotificationManager.shared.scheduleReminders(
                 intervalMinutes: settings.reminderIntervalMinutes,
                 startHour: settings.reminderStartHour,
