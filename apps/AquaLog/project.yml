@@ -51,6 +51,7 @@ targets:
         INFOPLIST_KEY_NSHealthUpdateUsageDescription: "AquaLog saves your water intake to Apple Health so all your health data stays in one place."
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "AquaLog checks your local weather to adjust your daily hydration goal for hot or humid conditions."
         ITSAppUsesNonExemptEncryption: false
+        NSSupportsLiveActivities: true
     entitlements:
       path: AquaLog/AquaLog.entitlements
       properties:
@@ -74,6 +75,7 @@ targets:
       - path: AquaLogWidgets
         excludes:
           - Info.plist
+      - path: AquaLog/Models/HydrationActivityAttributes.swift
     info:
       path: AquaLogWidgets/Info.plist
       properties:

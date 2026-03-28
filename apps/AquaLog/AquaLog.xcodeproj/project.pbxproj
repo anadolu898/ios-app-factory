@@ -10,17 +10,21 @@
 		02D70E19D7CBF1D7FF1D4E67 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CBF37C288A07CEFE86CAB6 /* MainTabView.swift */; };
 		099937A8B2D547E8D077900B /* AquaLogWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776D47DCA004DDAF02CAB8B6 /* AquaLogWidgets.swift */; };
 		09C50544F4C0314E18C9DCDD /* Date+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CC066C5ACA2DCFD6511793 /* Date+Helpers.swift */; };
+		09D8A47FA91A374E1E2152C6 /* ControlCenterWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD13ED4B4E8968E93EBF6720 /* ControlCenterWidget.swift */; };
 		12D4E88F43340184FAEEEE56 /* WatchComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13DD13E3D44AD5289BBACB4 /* WatchComplication.swift */; };
 		13F9A65F04F12AF05C529637 /* AquaLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 566C80672CD8B36E56731151 /* AquaLogTests.swift */; };
 		151349D47D4907B5F9E4AA1C /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */; };
 		17C59D42EC0157AF6C606C3B /* AlcoholCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92CA513C5C1672EBE49275E /* AlcoholCalculator.swift */; };
 		17DD844AAFC074CEE60CB2BC /* HydrationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC69A2C29B6721F35DE99E64 /* HydrationCalculator.swift */; };
+		1852E109B7F32B3899CFAAD7 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA2CB2E42A4931E328E9C59 /* LiveActivityManager.swift */; };
 		19A6864A211B897C731D93E8 /* BeverageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4255F75E3F253988A61C89E /* BeverageType.swift */; };
 		1D5B4E548A38C0B0364901ED /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C2801A5264314FE9618484 /* AppIntents.swift */; };
+		1E57BADB2CDE12159C1B3BE3 /* HydrationActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C080F5B7C740BCDD10D237 /* HydrationActivityAttributes.swift */; };
 		2A5D019B2181BA08368C9CA7 /* BodyReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FC279B3A991685AACEA9FC /* BodyReportView.swift */; };
 		324B2CF77A9B770EC99190DF /* WaterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB560F03BACD80C0D809C2F5 /* WaterLog.swift */; };
 		33A1C6CAEEED7B8823F4C2AE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D43B5A690DCD6FA0335EE4C /* DashboardViewModel.swift */; };
 		37E88C921C3550581C4BB53B /* AlcoholImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB46BA57C7E705C54DBC6C4B /* AlcoholImpactView.swift */; };
+		3B67898E3F9432F792ECCC40 /* WidgetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453C45936C4E0A189C47D459 /* WidgetIntents.swift */; };
 		458E4C86FA7A5CF87814CD78 /* WorkoutDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */; };
 		47A49858B38166CB9A38811C /* WatchDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89AE663BF55FEDA930C61E5 /* WatchDashboardView.swift */; };
 		4C30CEF5AA2B58D898211286 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D35D47EE9AC85F5D5168902 /* StoreManager.swift */; };
@@ -34,6 +38,7 @@
 		8570A3BE6C5C285F7350463C /* AquaLogProducts.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 81E6E0EBD29FB0EB8F728B43 /* AquaLogProducts.storekit */; };
 		89E1D4E1A17425202A16C2E0 /* AquaLogWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E871455B238DD89D959FB0 /* AquaLogWatchApp.swift */; };
 		8C497653BB4A35555C94DF06 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25C5DB9F1469909C0CC79A5 /* PaywallView.swift */; };
+		8E1650F20169ACFDE2F9A519 /* HydrationActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C080F5B7C740BCDD10D237 /* HydrationActivityAttributes.swift */; };
 		95AE59D96E1596E0496626BC /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFA46516E0E58240863BB78 /* HistoryView.swift */; };
 		A20A7EA73F2A87FCC88458A7 /* HealthTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE49686C08CBAC42D9B8FF /* HealthTimelineView.swift */; };
 		A56275120CB1F3D357D3CE63 /* AddDrinkSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE36AFEACCB4338C3660E56 /* AddDrinkSheet.swift */; };
@@ -45,6 +50,7 @@
 		C0A6205BC8DE649EA0668DA0 /* HealthInsightsGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AC61E8C4A6CE6B2F312BDE /* HealthInsightsGenerator.swift */; };
 		C30E67E673AA3AFF1FB150EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68BA50280346C28A7CA214CE /* Assets.xcassets */; };
 		CDFCDA812C27E02EA7245535 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 41F042F8C78110904EF0BA1B /* RevenueCat */; };
+		D41271D63EFD7F7B62CF3942 /* LiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F48461C5B4006CD68A22CA /* LiveActivityView.swift */; };
 		D654C276BCE1149A5570DB84 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76A5A52BFCE4ABA0B80F7FD /* LocationManager.swift */; };
 		D9BA1DB62AF091A3256A47AA /* AquaLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E6A9BF1FAB3402A4B13A03 /* AquaLogApp.swift */; };
 		DB51FC741D5EAADB17154DD8 /* CaffeineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4BDBE5B71A50C55452C6AB /* CaffeineChartView.swift */; };
@@ -87,14 +93,17 @@
 		008F689B1E1D75A79245C916 /* SmartNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartNotificationManager.swift; sourceTree = "<group>"; };
 		0330CD27B4E0CBDD5F7AEC1E /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		0423D4B89D58246292F7E910 /* AquaLogTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AquaLogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		05C080F5B7C740BCDD10D237 /* HydrationActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationActivityAttributes.swift; sourceTree = "<group>"; };
 		0D230203E43212733027A501 /* AquaLogWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AquaLogWatch.entitlements; sourceTree = "<group>"; };
 		0D43B5A690DCD6FA0335EE4C /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		0EA2CB2E42A4931E328E9C59 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		1B636CACFD6ED38AEA545DDF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		25C596B7FBB19FC597F404B9 /* AquaLogWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AquaLogWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		29C1887140D0E0965FE40FAE /* AquaLog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AquaLog.entitlements; sourceTree = "<group>"; };
 		2BC86B8BEE919810B3709BB4 /* AquaLogWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AquaLogWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		34CC066C5ACA2DCFD6511793 /* Date+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Helpers.swift"; sourceTree = "<group>"; };
 		37AC61E8C4A6CE6B2F312BDE /* HealthInsightsGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthInsightsGenerator.swift; sourceTree = "<group>"; };
+		453C45936C4E0A189C47D459 /* WidgetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetIntents.swift; sourceTree = "<group>"; };
 		4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
 		52F8EEC484713383D827CB9B /* Int+Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Volume.swift"; sourceTree = "<group>"; };
 		54AA9C6C77D0D2564744D580 /* AquaLogWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AquaLogWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +128,7 @@
 		B3C38BFFDF4D6E0D32531805 /* NutrientDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientDatabase.swift; sourceTree = "<group>"; };
 		C25C5DB9F1469909C0CC79A5 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		C76A5A52BFCE4ABA0B80F7FD /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		D0F48461C5B4006CD68A22CA /* LiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityView.swift; sourceTree = "<group>"; };
 		D1179426186CE2FE5744BD19 /* SmartOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartOnboardingView.swift; sourceTree = "<group>"; };
 		D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetector.swift; sourceTree = "<group>"; };
 		D89AE663BF55FEDA930C61E5 /* WatchDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDashboardView.swift; sourceTree = "<group>"; };
@@ -131,6 +141,7 @@
 		F58DA8F7DA6A3F47C400A399 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FAE36AFEACCB4338C3660E56 /* AddDrinkSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDrinkSheet.swift; sourceTree = "<group>"; };
 		FC69A2C29B6721F35DE99E64 /* HydrationCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationCalculator.swift; sourceTree = "<group>"; };
+		FD13ED4B4E8968E93EBF6720 /* ControlCenterWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +174,7 @@
 				37AC61E8C4A6CE6B2F312BDE /* HealthInsightsGenerator.swift */,
 				4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */,
 				FC69A2C29B6721F35DE99E64 /* HydrationCalculator.swift */,
+				0EA2CB2E42A4931E328E9C59 /* LiveActivityManager.swift */,
 				C76A5A52BFCE4ABA0B80F7FD /* LocationManager.swift */,
 				90670B485D1CBAFED402F220 /* NotificationManager.swift */,
 				B3C38BFFDF4D6E0D32531805 /* NutrientDatabase.swift */,
@@ -177,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				E4255F75E3F253988A61C89E /* BeverageType.swift */,
+				05C080F5B7C740BCDD10D237 /* HydrationActivityAttributes.swift */,
 				0330CD27B4E0CBDD5F7AEC1E /* UserSettings.swift */,
 				EB560F03BACD80C0D809C2F5 /* WaterLog.swift */,
 			);
@@ -247,6 +260,9 @@
 			children = (
 				A3B3BDDEA251D1CD04DF93B0 /* AquaLogWidgets.entitlements */,
 				776D47DCA004DDAF02CAB8B6 /* AquaLogWidgets.swift */,
+				FD13ED4B4E8968E93EBF6720 /* ControlCenterWidget.swift */,
+				D0F48461C5B4006CD68A22CA /* LiveActivityView.swift */,
+				453C45936C4E0A189C47D459 /* WidgetIntents.swift */,
 			);
 			path = AquaLogWidgets;
 			sourceTree = "<group>";
@@ -509,8 +525,10 @@
 				151349D47D4907B5F9E4AA1C /* HealthKitManager.swift in Sources */,
 				A20A7EA73F2A87FCC88458A7 /* HealthTimelineView.swift in Sources */,
 				95AE59D96E1596E0496626BC /* HistoryView.swift in Sources */,
+				8E1650F20169ACFDE2F9A519 /* HydrationActivityAttributes.swift in Sources */,
 				17DD844AAFC074CEE60CB2BC /* HydrationCalculator.swift in Sources */,
 				AE3DCCA12E93A273AEEF965C /* Int+Volume.swift in Sources */,
+				1852E109B7F32B3899CFAAD7 /* LiveActivityManager.swift in Sources */,
 				D654C276BCE1149A5570DB84 /* LocationManager.swift in Sources */,
 				02D70E19D7CBF1D7FF1D4E67 /* MainTabView.swift in Sources */,
 				BC575D1F8E7FA919A39907B8 /* NotificationManager.swift in Sources */,
@@ -532,6 +550,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				099937A8B2D547E8D077900B /* AquaLogWidgets.swift in Sources */,
+				09D8A47FA91A374E1E2152C6 /* ControlCenterWidget.swift in Sources */,
+				1E57BADB2CDE12159C1B3BE3 /* HydrationActivityAttributes.swift in Sources */,
+				D41271D63EFD7F7B62CF3942 /* LiveActivityView.swift in Sources */,
+				3B67898E3F9432F792ECCC40 /* WidgetIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -778,6 +800,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
+				NSSupportsLiveActivities = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anadolu898.aqualog;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -844,6 +867,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
+				NSSupportsLiveActivities = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anadolu898.aqualog;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

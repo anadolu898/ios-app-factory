@@ -50,55 +50,63 @@ struct HydrationTimelineProvider: TimelineProvider {
     }
 }
 
-// MARK: - Small Widget View
+// MARK: - Small Widget View (Interactive)
 
 struct SmallWidgetView: View {
     let entry: HydrationEntry
 
     var body: some View {
         ZStack {
+            // Progress ring
             Circle()
-                .stroke(Color.blue.opacity(0.2), lineWidth: 10)
+                .stroke(Color.cyan.opacity(0.2), lineWidth: 8)
 
             Circle()
                 .trim(from: 0, to: entry.progress)
                 .stroke(
-                    Color.blue,
-                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                    LinearGradient(colors: [.cyan, .blue], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
 
             VStack(spacing: 2) {
                 Text(entry.percentText)
-                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .font(.system(.title3, design: .rounded, weight: .bold))
                     .foregroundStyle(.blue)
 
-                Text(entry.currentML.volumeString(unitSystem: "metric"))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                // Interactive: tap to add 250mL without opening app
+                Button(intent: QuickAddWaterIntent(amount: 250)) {
+                    Label("250", systemImage: "plus")
+                        .font(.system(.caption2, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(.blue))
+                }
+                .buttonStyle(.plain)
             }
         }
-        .padding(12)
+        .padding(10)
         .containerBackground(.fill.tertiary, for: .widget)
     }
 }
 
-// MARK: - Medium Widget View
+// MARK: - Medium Widget View (Interactive)
 
 struct MediumWidgetView: View {
     let entry: HydrationEntry
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Progress ring
             ZStack {
                 Circle()
-                    .stroke(Color.blue.opacity(0.2), lineWidth: 8)
+                    .stroke(Color.cyan.opacity(0.2), lineWidth: 8)
 
                 Circle()
                     .trim(from: 0, to: entry.progress)
                     .stroke(
-                        Color.blue,
+                        LinearGradient(colors: [.cyan, .blue], startPoint: .topLeading, endPoint: .bottomTrailing),
                         style: StrokeStyle(lineWidth: 8, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
@@ -107,16 +115,12 @@ struct MediumWidgetView: View {
                     .font(.system(.title3, design: .rounded, weight: .bold))
                     .foregroundStyle(.blue)
             }
-            .frame(width: 80, height: 80)
+            .frame(width: 70, height: 70)
 
             // Info
-            VStack(alignment: .leading, spacing: 6) {
-                Text(String(localized: "Hydration"))
-                    .font(.headline)
-
+            VStack(alignment: .leading, spacing: 4) {
                 Text("\(entry.currentML.volumeString(unitSystem: "metric")) / \(entry.goalML.volumeString(unitSystem: "metric"))")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.medium))
 
                 if entry.progress >= 1.0 {
                     Label(String(localized: "Goal reached!"), systemImage: "checkmark.circle.fill")
@@ -131,6 +135,34 @@ struct MediumWidgetView: View {
             }
 
             Spacer()
+
+            // Interactive quick-add buttons — NO app launch
+            VStack(spacing: 6) {
+                Button(intent: QuickAddWaterIntent(amount: 150)) {
+                    Text("150")
+                        .font(.caption2.bold())
+                        .frame(width: 44, height: 28)
+                        .background(Color.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+
+                Button(intent: QuickAddWaterIntent(amount: 250)) {
+                    Text("250")
+                        .font(.caption2.bold())
+                        .frame(width: 44, height: 28)
+                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 8))
+                        .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+
+                Button(intent: QuickAddWaterIntent(amount: 500)) {
+                    Text("500")
+                        .font(.caption2.bold())
+                        .frame(width: 44, height: 28)
+                        .background(Color.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding()
         .containerBackground(.fill.tertiary, for: .widget)
@@ -203,6 +235,10 @@ struct AquaLogWidgetBundle: WidgetBundle {
         HydrationSmallWidget()
         HydrationMediumWidget()
         HydrationLockScreenWidget()
+        if #available(iOS 18.0, *) {
+            AquaLogControlWidget()
+        }
+        HydrationLiveActivity()
     }
 }
 

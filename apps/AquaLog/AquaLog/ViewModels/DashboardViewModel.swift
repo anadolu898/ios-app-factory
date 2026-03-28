@@ -70,6 +70,7 @@ final class DashboardViewModel {
         syncHealthKit()
         checkWorkouts()
         checkWeather()
+        updateLiveActivity()
     }
 
     // MARK: - Fetch
@@ -160,6 +161,7 @@ final class DashboardViewModel {
         fetchTodayLogs()
         updateStreak()
         syncToWidgets()
+        updateLiveActivity()
         saveToHealthKit(amount: amount)
         scheduleSmartNotifications()
         triggerHaptic()
@@ -265,6 +267,15 @@ final class DashboardViewModel {
         Task {
             _ = await HealthKitManager.shared.saveWaterIntake(milliliters: amount)
         }
+    }
+
+    // MARK: - Live Activity
+
+    private func updateLiveActivity() {
+        LiveActivityManager.shared.updateProgress(
+            currentML: todayTotal,
+            goalML: dailyGoal
+        )
     }
 
     // MARK: - Weather
