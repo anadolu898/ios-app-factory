@@ -81,6 +81,71 @@
 - **Watch app:** Include if the app has a "glanceable" metric
 - **Siri Shortcuts:** Always include — free discoverability
 
+### Automation Tools Available
+
+We have THREE layers of automation, each covering different surfaces:
+
+**Layer 1: Code & Build (Already Working)**
+- Tools: Bash, Read/Write/Edit, XcodeBuildMCP, GitHub MCP
+- Covers: Writing code, building, testing, git operations
+- Status: ✅ Fully automated
+
+**Layer 2: Browser & Third-Party Services (Available, Underutilized)**
+- Tools: Claude in Chrome MCP (navigate, find, click, form_input, read_page, screenshot)
+- Covers: Sentry dashboard, RevenueCat dashboard, App Store Connect, any web UI
+- Status: ⚠️ Available but wasn't used during AquaLog build — should be used for:
+  - Creating Sentry projects automatically
+  - Setting up RevenueCat products/offerings/entitlements
+  - Filling App Store Connect metadata from aso.json
+  - Uploading screenshots to ASC
+  - Monitoring crash reports and revenue dashboards
+  - Any third-party web service configuration
+- LESSON: We did Sentry setup manually (user navigated browser). Should have used Chrome MCP.
+
+**Layer 3: Desktop App Control (Not Yet Implemented)**
+- Tools: Claude Computer Use API (screenshot, mouse, keyboard on desktop apps)
+- Covers: iOS Simulator interaction, Xcode UI, Finder, any macOS app
+- Status: ❌ Not implemented — requires a Python wrapper script
+- Would solve: Simulator button clicking (our #1 manual bottleneck), taking step-by-step
+  screenshots through onboarding flows, testing dark mode toggle, etc.
+- Implementation plan:
+  1. Build `scripts/computer_use_agent.py` using Anthropic Python SDK
+  2. Agent takes screenshots of the simulator via `screencapture`
+  3. Sends to Claude API with computer_20251124 tool
+  4. Executes clicks/types via `cliclick` or `osascript` based on Claude's vision
+  5. Loops until task is complete
+  6. Saves screenshots at each step to Metadata/screenshots/
+- Cost: ~$0.05-0.20 per screenshot interaction (vision + API)
+
+**The Full Pipeline (Target State):**
+```
+Claude Code session:
+  1. Generate code → Layer 1 (Bash, XcodeBuildMCP)
+  2. Build & test → Layer 1 (XcodeBuildMCP)
+  3. Launch simulator → Layer 1 (XcodeBuildMCP)
+  4. Test UI + take screenshots → Layer 3 (Computer Use API)
+  5. Set up Sentry/RevenueCat → Layer 2 (Chrome MCP)
+  6. Fill App Store Connect → Layer 2 (Chrome MCP)
+  7. Upload build → Layer 1 (xcodebuild + altool via Bash)
+  8. Submit for review → Layer 2 (Chrome MCP on ASC)
+  9. Post launch content → Layer 2 (Chrome MCP on Reddit/PH)
+```
+
+Steps 1-3 are automated today. Steps 4-9 are possible but weren't used.
+The gap between "possible" and "used" is the next optimization target.
+
+### Issues We Hit That Each Layer Would Solve
+
+| Issue | Layer That Fixes It |
+|-------|-------------------|
+| cliclick coordinates wrong for simulator | Layer 3 (Computer Use — vision-based, not coordinate math) |
+| User had to manually create Sentry project | Layer 2 (Chrome MCP → navigate, click, fill) |
+| User had to manually find Sentry DSN | Layer 2 (Chrome MCP → read_page, extract text) |
+| Screenshots all showed same screen | Layer 3 (Computer Use — verifies each screen before capturing) |
+| Couldn't test onboarding flow end-to-end | Layer 3 (Computer Use — sees and clicks each step) |
+| App Store Connect metadata entry (future) | Layer 2 (Chrome MCP → fill forms from aso.json) |
+| Upload screenshots to ASC (future) | Layer 2 (Chrome MCP → file_upload) |
+
 ### Files That Should Be Templated
 
 - `project.yml` — parameterize bundle ID, app name, targets
