@@ -1,0 +1,87 @@
+name: AquaLog
+options:
+  bundleIdPrefix: com.anadolu898
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_VERSION: "6.0"
+
+targets:
+  AquaLog:
+    type: application
+    platform: iOS
+    sources:
+      - path: AquaLog
+        excludes:
+          - "Preview Content"
+    resources:
+      - path: AquaLog/Resources
+      - path: AquaLog/Preview Content
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_CFBundleDisplayName: AquaLog
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        DEVELOPMENT_ASSET_PATHS: '"AquaLog/Preview Content"'
+        ENABLE_PREVIEWS: true
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "AquaLog reads your water intake data to show your hydration history."
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "AquaLog saves your water intake to Apple Health so all your health data stays in one place."
+    entitlements:
+      path: AquaLog/AquaLog.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access:
+          - health-records
+        com.apple.security.application-groups:
+          - group.com.anadolu898.aqualog
+    dependencies:
+      - target: AquaLogWidgets
+        embed: true
+
+  AquaLogWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: AquaLogWidgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.widgets
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_CFBundleDisplayName: AquaLog Widgets
+        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+    entitlements:
+      path: AquaLogWidgets/AquaLogWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.anadolu898.aqualog
+
+  AquaLogTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AquaLogTests
+    dependencies:
+      - target: AquaLog
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.tests
+        GENERATE_INFOPLIST_FILE: true
+        CODE_SIGN_STYLE: Automatic
