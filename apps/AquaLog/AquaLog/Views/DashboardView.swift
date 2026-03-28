@@ -11,6 +11,11 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     progressSection
+
+                    if let weatherMsg = viewModel.weatherMessage {
+                        weatherBanner(weatherMsg)
+                    }
+
                     insightsSection
 
                     if let caffeineStatus = viewModel.caffeineStatus {
@@ -90,6 +95,25 @@ struct DashboardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.regularMaterial)
         )
+    }
+
+    // MARK: - Weather Banner
+
+    private func weatherBanner(_ message: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "sun.max.fill")
+                .foregroundStyle(.orange)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.primary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.orange.opacity(0.1))
+        )
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Insights Section (Streaks + Caffeine)

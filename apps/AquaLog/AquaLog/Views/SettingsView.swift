@@ -20,6 +20,7 @@ struct SettingsView: View {
                 goalSection
                 unitSection
                 reminderSection
+                dataSection
                 premiumSection
                 aboutSection
             }
@@ -173,6 +174,38 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Data Section
+
+    @State private var showingExportSuccess = false
+
+    private var dataSection: some View {
+        Section {
+            if let settings, StoreManager.shared.isPremium {
+                Button {
+                    exportData(unitSystem: settings.unitSystem)
+                } label: {
+                    Label(String(localized: "Export History (CSV)"), systemImage: "square.and.arrow.up")
+                }
+                .accessibilityLabel(String(localized: "Export hydration history as CSV"))
+            } else {
+                HStack {
+                    Label(String(localized: "Export History (CSV)"), systemImage: "square.and.arrow.up")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(String(localized: "Pro"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.accentColor, in: Capsule())
+                }
+                .accessibilityLabel(String(localized: "Export history requires AquaLog Pro"))
+            }
+        } header: {
+            Text(String(localized: "Data"))
+        }
+    }
+
     // MARK: - About Section
 
     private var aboutSection: some View {
@@ -187,6 +220,16 @@ struct SettingsView: View {
             .accessibilityLabel(
                 String(localized: "App version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
             )
+
+            Link(destination: URL(string: "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/privacy-policy.html")!) {
+                Label(String(localized: "Privacy Policy"), systemImage: "hand.raised.fill")
+            }
+            .accessibilityLabel(String(localized: "View privacy policy"))
+
+            Link(destination: URL(string: "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/terms-of-use.html")!) {
+                Label(String(localized: "Terms of Use"), systemImage: "doc.text.fill")
+            }
+            .accessibilityLabel(String(localized: "View terms of use"))
 
             Button {
                 hasCompletedOnboarding = false
@@ -238,6 +281,45 @@ struct SettingsView: View {
                 startHour: settings.reminderStartHour,
                 endHour: settings.reminderEndHour
             )
+        }
+    }
+
+    // MARK: - Data Export
+
+    @Query(sort: \WaterLog.timestamp, order: .reverse) private var allLogs: [WaterLog]
+
+    private func exportData(unitSystem: String) {
+        var csv = "Date,Time,Beverage,Amount (\(unitSystem == "imperial" ? "oz" : "mL"))\n"
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+
+        for log in allLogs {
+            let date = dateFormatter.string(from: log.timestamp)
+            let time = timeFormatter.string(from: log.timestamp)
+            let beverage = Beverage(rawValue: log.beverageType.lowercased())?.displayName ?? log.beverageType
+            let amount: String
+            if unitSystem == "imperial" {
+                amount = String(format: "%.1f", Double(log.amount) / 29.5735)
+            } else {
+                amount = "\(log.amount)"
+            }
+            csv += "\(date),\(time),\(beverage),\(amount)\n"
+        }
+
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("AquaLog-History.csv")
+        do {
+            try csv.write(to: tempURL, atomically: true, encoding: .utf8)
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                rootVC.present(activityVC, animated: true)
+            }
+        } catch {
+            // Export failed silently
         }
     }
 }

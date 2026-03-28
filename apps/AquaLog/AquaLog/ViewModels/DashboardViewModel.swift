@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import SwiftData
 import SwiftUI
@@ -18,6 +19,10 @@ final class DashboardViewModel {
     var todayCaffeineMG: Double = 0
     var currentStreak: Int = 0
     var longestStreak: Int = 0
+
+    // Weather
+    var currentClimate: HydrationCalculator.Climate = .temperate
+    var weatherAdjustmentML: Int = 0
 
     var dailyGoal: Int {
         settings?.dailyGoalML ?? 2500
@@ -44,6 +49,11 @@ final class DashboardViewModel {
         CaffeineInfo.statusMessage(totalCaffeineMG: todayCaffeineMG)
     }
 
+    var weatherMessage: String? {
+        guard currentClimate != .temperate && currentClimate != .cool else { return nil }
+        return String(localized: "It's \(currentClimate.displayName.lowercased()) today — drink \(weatherAdjustmentML) mL extra!")
+    }
+
     // MARK: - Setup
 
     func setup(modelContext: ModelContext) {
@@ -51,6 +61,7 @@ final class DashboardViewModel {
         fetchTodayLogs()
         fetchSettings()
         updateStreak()
+        syncHealthKit()
     }
 
     // MARK: - Fetch
@@ -136,6 +147,7 @@ final class DashboardViewModel {
         fetchTodayLogs()
         updateStreak()
         syncToWidgets()
+        saveToHealthKit(amount: amount)
         scheduleRemindersIfNeeded()
         triggerHaptic()
     }
@@ -207,6 +219,23 @@ final class DashboardViewModel {
                 startHour: settings.reminderStartHour,
                 endHour: settings.reminderEndHour
             )
+        }
+    }
+
+    // MARK: - HealthKit
+
+    private func syncHealthKit() {
+        Task {
+            let status = HealthKitManager.shared.authorizationStatus()
+            guard status == .sharingAuthorized else { return }
+            // Sync today's HealthKit water data as context (read-only for now)
+            _ = await HealthKitManager.shared.todayWaterIntake()
+        }
+    }
+
+    func saveToHealthKit(amount: Int) {
+        Task {
+            _ = await HealthKitManager.shared.saveWaterIntake(milliliters: amount)
         }
     }
 
