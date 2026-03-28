@@ -1,0 +1,48 @@
+{
+  "app_name": "AquaLog",
+  "bundle_id": "com.anadolu898.aqualog",
+  "category": "Health & Fitness",
+  "title": "AquaLog - Water Tracker",
+  "subtitle": "Hydration & Drink Reminder",
+  "keywords": "water,tracker,hydration,drink,reminder,daily,intake,goal,health,log,widget,habit,counter,record,fit",
+  "promotional_text": "Stay hydrated with the simplest water tracker. One-tap logging, beautiful widgets, and smart reminders. Start your free trial today.",
+  "whats_new": "Welcome to AquaLog! Start tracking your hydration today.\n\n- Beautiful progress ring dashboard\n- Quick-add buttons for instant logging\n- Home Screen and Lock Screen widgets\n- Weekly hydration charts\n- Apple Health integration\n- Smart drink reminders\n- Dark Mode support",
+  "support_url": "",
+  "privacy_url": "",
+  "price_tier": "0",
+  "subscription_groups": [
+    {
+      "name": "AquaLog Premium",
+      "products": [
+        {
+          "id": "com.anadolu898.aqualog.premium.monthly",
+          "name": "Monthly",
+          "price": 3.99,
+          "duration": "P1M",
+          "trial": "P1W"
+        },
+        {
+          "id": "com.anadolu898.aqualog.premium.yearly",
+          "name": "Yearly",
+          "price": 29.99,
+          "duration": "P1Y",
+          "trial": "P1W"
+        }
+      ]
+    }
+  ],
+  "localizations": {
+    "en-US": {
+      "title": "AquaLog - Water Tracker",
+      "subtitle": "Hydration & Drink Reminder",
+      "keywords": "water,tracker,hydration,drink,reminder,daily,intake,goal,health,log,widget,habit,counter,record,fit"
+    }
+  },
+  "revenuecat": {
+    "project_id": "proje6d6c9b3",
+    "entitlement_id": "entla7bdce6b82",
+    "offering_id": "ofrng9217191b69",
+    "monthly_product_id": "prod0ced7dea21",
+    "yearly_product_id": "prod88e7ecc3da"
+  }
+}
