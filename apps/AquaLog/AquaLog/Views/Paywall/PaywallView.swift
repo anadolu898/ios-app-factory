@@ -11,11 +11,12 @@ struct PaywallView: View {
     private var storeManager: StoreManager { .shared }
 
     private let features: [(icon: String, title: String, subtitle: String)] = [
-        ("chart.bar.fill", String(localized: "Detailed Analytics"), String(localized: "Weekly and monthly charts to track your habits")),
-        ("drop.degreesign.fill", String(localized: "Custom Beverages"), String(localized: "Track tea, coffee, juice and more")),
-        ("square.and.arrow.up.fill", String(localized: "Export Data"), String(localized: "Export your hydration history as CSV")),
-        ("widget.small.badge.plus", String(localized: "All Widgets"), String(localized: "Multiple widget sizes for your Home Screen")),
-        ("bell.badge.fill", String(localized: "Smart Reminders"), String(localized: "Customizable reminder schedule"))
+        ("brain.head.profile.fill", String(localized: "Health Timeline"), String(localized: "Research-cited milestones tracking your body's improvement")),
+        ("wineglass.fill", String(localized: "Alcohol Calculator"), String(localized: "See dehydration impact, BAC, and recovery time")),
+        ("mug.fill", String(localized: "Caffeine Tracker"), String(localized: "Half-life decay curve and sleep impact analysis")),
+        ("chart.bar.doc.horizontal", String(localized: "Weekly Body Report"), String(localized: "Net hydration score, trends, and personalized insights")),
+        ("square.and.arrow.up.fill", String(localized: "Export Data"), String(localized: "Export your full hydration history as CSV")),
+        ("cup.and.saucer.fill", String(localized: "23 Beverages"), String(localized: "Track every drink type with full nutrition data"))
     ]
 
     var body: some View {
@@ -120,8 +121,16 @@ struct PaywallView: View {
                     HStack {
                         Text(product.displayName)
                             .font(.headline)
-                        if product.id == StoreManager.yearlyID {
-                            Text(String(localized: "Best Value"))
+                        if product.id == StoreManager.lifetimeID {
+                            Text(String(localized: "Best Deal"))
+                                .font(.caption2.weight(.bold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color.green)
+                                .foregroundStyle(.white)
+                                .clipShape(Capsule())
+                        } else if product.id == StoreManager.yearlyID {
+                            Text(String(localized: "Save 58%"))
                                 .font(.caption2.weight(.bold))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
@@ -165,7 +174,9 @@ struct PaywallView: View {
                     ProgressView()
                         .tint(.white)
                 } else {
-                    Text(String(localized: "Start Free Trial"))
+                    Text(selectedProduct?.id == StoreManager.lifetimeID
+                         ? String(localized: "Buy Lifetime Access")
+                         : String(localized: "Start Free Trial"))
                         .font(.headline)
                 }
             }
@@ -182,9 +193,15 @@ struct PaywallView: View {
     private var legalSection: some View {
         VStack(spacing: 8) {
             if let product = selectedProduct {
-                Text(String(localized: "7-day free trial, then \(product.displayPrice)/\(product.id.contains("yearly") ? String(localized: "year") : String(localized: "month"))"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if product.id == StoreManager.lifetimeID {
+                    Text(String(localized: "One-time payment of \(product.displayPrice) — yours forever"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(String(localized: "7-day free trial, then \(product.displayPrice)/\(product.id.contains("yearly") ? String(localized: "year") : String(localized: "month"))"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Button(String(localized: "Restore Purchases")) {

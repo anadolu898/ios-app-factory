@@ -254,6 +254,66 @@ struct AddDrinkSheet: View {
                             .font(.subheadline.weight(.semibold).monospacedDigit())
                     }
                 }
+
+                // Sugar info
+                if selectedProfile.sugarGramsPer250mL > 0 {
+                    let sugar = selectedProfile.sugarGramsPer250mL * (Double(amountValue) / 250.0)
+                    HStack {
+                        Image(systemName: "cube.fill")
+                            .foregroundStyle(.pink)
+                        Text(String(localized: "Sugar"))
+                            .font(.subheadline)
+                        Spacer()
+                        Text(String(format: "%.0fg", sugar))
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                    }
+                }
+
+                // Alcohol impact
+                if selectedProfile.alcoholABV > 0 {
+                    let alcoholImpact = AlcoholCalculator.shared.calculateImpact(
+                        beverageId: selectedProfile.id,
+                        volumeML: amountValue,
+                        weightKg: 70, // Default — real value from settings in production
+                        gender: .other
+                    )
+
+                    Divider()
+
+                    HStack {
+                        Image(systemName: "wineglass.fill")
+                            .foregroundStyle(.purple)
+                        Text(String(localized: "Alcohol"))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text(String(format: "%.1f drinks", alcoholImpact.standardDrinks))
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(.purple)
+                    }
+
+                    HStack {
+                        Image(systemName: "drop.triangle.fill")
+                            .foregroundStyle(.red)
+                        Text(String(localized: "Extra water needed"))
+                            .font(.caption)
+                        Spacer()
+                        Text("\(alcoholImpact.dehydrationML) mL")
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(.red)
+                    }
+
+                    if alcoholImpact.recoveryTimeHours > 0 {
+                        HStack {
+                            Image(systemName: "clock.fill")
+                                .foregroundStyle(.orange)
+                            Text(String(localized: "Recovery time"))
+                                .font(.caption)
+                            Spacer()
+                            Text(String(format: "%.1f hrs", alcoholImpact.recoveryTimeHours))
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                        }
+                    }
+                }
             }
         } header: {
             Text(String(localized: "Hydration Intelligence"))

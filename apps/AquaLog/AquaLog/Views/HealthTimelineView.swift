@@ -4,6 +4,7 @@ import SwiftData
 struct HealthTimelineView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var settingsQuery: [UserSettings]
+    @Query(sort: \WaterLog.timestamp, order: .reverse) private var allLogs: [WaterLog]
 
     private var settings: UserSettings? { settingsQuery.first }
     private var currentStreak: Int { settings?.currentStreak ?? 0 }
@@ -30,43 +31,43 @@ struct HealthTimelineView: View {
     // MARK: - Quick Links
 
     private var quickLinksSection: some View {
-        HStack(spacing: 12) {
-            NavigationLink {
-                CaffeineChartView()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "mug.fill")
-                        .foregroundStyle(.brown)
-                    Text(String(localized: "Caffeine"))
-                        .font(.subheadline.weight(.medium))
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                NavigationLink {
+                    CaffeineChartView()
+                } label: {
+                    quickLinkButton(icon: "mug.fill", title: String(localized: "Caffeine"), color: .brown)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.brown.opacity(0.1))
-                )
-                .foregroundStyle(.primary)
+
+                NavigationLink {
+                    AlcoholImpactView()
+                } label: {
+                    quickLinkButton(icon: "wineglass.fill", title: String(localized: "Alcohol"), color: .purple)
+                }
             }
 
             NavigationLink {
                 BodyReportView()
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "chart.bar.doc.horizontal")
-                        .foregroundStyle(.blue)
-                    Text(String(localized: "Report"))
-                        .font(.subheadline.weight(.medium))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.blue.opacity(0.1))
-                )
-                .foregroundStyle(.primary)
+                quickLinkButton(icon: "chart.bar.doc.horizontal", title: String(localized: "Weekly Report"), color: .blue)
             }
         }
+    }
+
+    private func quickLinkButton(icon: String, title: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+            Text(title)
+                .font(.subheadline.weight(.medium))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(color.opacity(0.1))
+        )
+        .foregroundStyle(.primary)
     }
 
     // MARK: - Score Card
@@ -306,10 +307,34 @@ struct HealthTimelineView: View {
     // MARK: - Data Loading
 
     private func loadReport() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let goal = settings?.dailyGoalML ?? 2500
+
+        // Build last 7 days of data from actual logs
+        let weekLogs: [(date: Date, totalML: Int, goalML: Int)] = (0..<7).reversed().map { offset in
+            let date = calendar.date(byAdding: .day, value: -offset, to: today) ?? today
+            let dayLogs = allLogs.filter { calendar.isDate($0.timestamp, inSameDayAs: date) }
+            let total = dayLogs.reduce(0) { $0 + $1.amount }
+            return (date: date, totalML: total, goalML: goal)
+        }
+
+        // Calculate week caffeine and alcohol
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: .now) ?? .now
+        let weekCaffeine = allLogs.filter { $0.timestamp >= weekAgo }.reduce(0.0) {
+            $0 + CaffeineInfo.caffeinePerServing(beverage: $1.beverageType, amountML: $1.amount)
+        }
+        let weekAlcohol = allLogs.filter { $0.timestamp >= weekAgo }.reduce(0.0) { total, log in
+            guard let p = NutrientDatabase.profile(for: log.beverageType), p.alcoholABV > 0 else { return total }
+            return total + (Double(log.amount) * p.alcoholABV * 0.789 / 14.0)
+        }
+
         report = HealthInsightsGenerator.shared.generateReport(
             currentStreak: currentStreak,
             longestStreak: longestStreak,
-            weekLogs: [] // TODO: populate from actual SwiftData logs
+            weekLogs: weekLogs,
+            weekCaffeineMG: weekCaffeine,
+            weekAlcoholDrinks: weekAlcohol
         )
     }
 }

@@ -20,6 +20,7 @@
 		2A5D019B2181BA08368C9CA7 /* BodyReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FC279B3A991685AACEA9FC /* BodyReportView.swift */; };
 		324B2CF77A9B770EC99190DF /* WaterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB560F03BACD80C0D809C2F5 /* WaterLog.swift */; };
 		33A1C6CAEEED7B8823F4C2AE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D43B5A690DCD6FA0335EE4C /* DashboardViewModel.swift */; };
+		37E88C921C3550581C4BB53B /* AlcoholImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB46BA57C7E705C54DBC6C4B /* AlcoholImpactView.swift */; };
 		458E4C86FA7A5CF87814CD78 /* WorkoutDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */; };
 		47A49858B38166CB9A38811C /* WatchDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89AE663BF55FEDA930C61E5 /* WatchDashboardView.swift */; };
 		4C30CEF5AA2B58D898211286 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D35D47EE9AC85F5D5168902 /* StoreManager.swift */; };
@@ -121,6 +122,7 @@
 		DF3D8719588488E415990128 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		E4255F75E3F253988A61C89E /* BeverageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeverageType.swift; sourceTree = "<group>"; };
 		E92CA513C5C1672EBE49275E /* AlcoholCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlcoholCalculator.swift; sourceTree = "<group>"; };
+		EB46BA57C7E705C54DBC6C4B /* AlcoholImpactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlcoholImpactView.swift; sourceTree = "<group>"; };
 		EB560F03BACD80C0D809C2F5 /* WaterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterLog.swift; sourceTree = "<group>"; };
 		F58DA8F7DA6A3F47C400A399 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FAE36AFEACCB4338C3660E56 /* AddDrinkSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDrinkSheet.swift; sourceTree = "<group>"; };
@@ -252,6 +254,7 @@
 			isa = PBXGroup;
 			children = (
 				FAE36AFEACCB4338C3660E56 /* AddDrinkSheet.swift */,
+				EB46BA57C7E705C54DBC6C4B /* AlcoholImpactView.swift */,
 				A1FC279B3A991685AACEA9FC /* BodyReportView.swift */,
 				9D4BDBE5B71A50C55452C6AB /* CaffeineChartView.swift */,
 				DF3D8719588488E415990128 /* DashboardView.swift */,
@@ -467,6 +470,7 @@
 			files = (
 				A56275120CB1F3D357D3CE63 /* AddDrinkSheet.swift in Sources */,
 				17C59D42EC0157AF6C606C3B /* AlcoholCalculator.swift in Sources */,
+				37E88C921C3550581C4BB53B /* AlcoholImpactView.swift in Sources */,
 				1D5B4E548A38C0B0364901ED /* AppIntents.swift in Sources */,
 				D9BA1DB62AF091A3256A47AA /* AquaLogApp.swift in Sources */,
 				19A6864A211B897C731D93E8 /* BeverageType.swift in Sources */,
@@ -737,7 +741,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = AquaLog;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "AquaLog reads your water intake data to show your hydration history.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "AquaLog reads your water intake and workout data to personalize hydration goals and suggest extra water after exercise.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "AquaLog saves your water intake to Apple Health so all your health data stays in one place.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -801,7 +805,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = AquaLog;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "AquaLog reads your water intake data to show your hydration history.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "AquaLog reads your water intake and workout data to personalize hydration goals and suggest extra water after exercise.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "AquaLog saves your water intake to Apple Health so all your health data stays in one place.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

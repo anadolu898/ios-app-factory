@@ -39,7 +39,7 @@ targets:
         DEVELOPMENT_ASSET_PATHS: '"AquaLog/Preview Content"'
         ENABLE_PREVIEWS: true
         TARGETED_DEVICE_FAMILY: "1,2"
-        INFOPLIST_KEY_NSHealthShareUsageDescription: "AquaLog reads your water intake data to show your hydration history."
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "AquaLog reads your water intake and workout data to personalize hydration goals and suggest extra water after exercise."
         INFOPLIST_KEY_NSHealthUpdateUsageDescription: "AquaLog saves your water intake to Apple Health so all your health data stays in one place."
     entitlements:
       path: AquaLog/AquaLog.entitlements

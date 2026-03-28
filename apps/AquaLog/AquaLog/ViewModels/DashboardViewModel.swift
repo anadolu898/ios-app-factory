@@ -17,6 +17,7 @@ final class DashboardViewModel {
     var todayTotal: Int = 0
     var todayProgress: Double = 0
     var todayCaffeineMG: Double = 0
+    var todaySugarGrams: Double = 0
     var currentStreak: Int = 0
     var longestStreak: Int = 0
 
@@ -28,7 +29,9 @@ final class DashboardViewModel {
     var workoutAdvice: WorkoutDetector.WorkoutHydrationAdvice?
 
     var dailyGoal: Int {
-        settings?.dailyGoalML ?? 2500
+        // Prefer AI-calculated goal from onboarding, fall back to manual setting
+        let goal = settings?.aiCalculatedGoalML ?? settings?.dailyGoalML ?? 2500
+        return goal > 0 ? goal : 2500
     }
 
     var unitSystem: String {
@@ -128,6 +131,11 @@ final class DashboardViewModel {
 
         todayCaffeineMG = todayLogs.reduce(0.0) { acc, log in
             acc + CaffeineInfo.caffeinePerServing(beverage: log.beverageType, amountML: log.amount)
+        }
+
+        todaySugarGrams = todayLogs.reduce(0.0) { acc, log in
+            let profile = NutrientDatabase.profile(for: log.beverageType)
+            return acc + (profile?.sugarGramsPer250mL ?? 0) * (Double(log.amount) / 250.0)
         }
 
         currentStreak = settings?.currentStreak ?? 0
