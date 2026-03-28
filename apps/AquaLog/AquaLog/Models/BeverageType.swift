@@ -79,4 +79,21 @@ enum Beverage: String, CaseIterable, Identifiable {
         default: [150, 250, 350, 500]
         }
     }
+
+    // MARK: - Universal Beverage Lookup
+
+    /// Look up display info for any beverage ID — handles both old Beverage enum IDs
+    /// and new NutrientDatabase IDs (e.g., "diet_soda", "wine_red")
+    static func displayInfo(for beverageType: String) -> (name: String, icon: String) {
+        // Try old enum first
+        if let bev = Beverage(rawValue: beverageType.lowercased()) {
+            return (bev.displayName, bev.icon)
+        }
+        // Fall back to NutrientDatabase
+        if let profile = NutrientDatabase.profile(for: beverageType) {
+            return (profile.displayName, profile.icon)
+        }
+        // Unknown beverage
+        return (beverageType.capitalized, "drop.fill")
+    }
 }

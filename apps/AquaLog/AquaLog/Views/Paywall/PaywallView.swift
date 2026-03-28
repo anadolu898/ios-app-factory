@@ -1,9 +1,9 @@
 import SwiftUI
-import StoreKit
+import RevenueCat
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedProduct: Product?
+    @State private var selectedPackage: Package?
     @State private var isPurchasing = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -49,8 +49,8 @@ struct PaywallView: View {
                 Text(errorMessage)
             }
             .task {
-                await storeManager.loadProducts()
-                selectedProduct = storeManager.yearlyProduct ?? storeManager.monthlyProduct
+                await storeManager.loadOfferings()
+                selectedPackage = storeManager.yearlyPackage ?? storeManager.monthlyPackage
             }
         }
     }
@@ -106,22 +106,24 @@ struct PaywallView: View {
 
     private var productsSection: some View {
         VStack(spacing: 12) {
-            ForEach(storeManager.products, id: \.id) { product in
-                productRow(product)
+            ForEach(storeManager.products, id: \.identifier) { package in
+                packageRow(package)
             }
         }
     }
 
-    private func productRow(_ product: Product) -> some View {
-        Button {
-            selectedProduct = product
+    private func packageRow(_ package: Package) -> some View {
+        let productID = package.storeProduct.productIdentifier
+
+        return Button {
+            selectedPackage = package
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
-                        Text(product.displayName)
+                        Text(package.storeProduct.localizedTitle)
                             .font(.headline)
-                        if product.id == StoreManager.lifetimeID {
+                        if productID == StoreManager.lifetimeID {
                             Text(String(localized: "Best Deal"))
                                 .font(.caption2.weight(.bold))
                                 .padding(.horizontal, 8)
@@ -129,7 +131,7 @@ struct PaywallView: View {
                                 .background(Color.green)
                                 .foregroundStyle(.white)
                                 .clipShape(Capsule())
-                        } else if product.id == StoreManager.yearlyID {
+                        } else if productID == StoreManager.yearlyID {
                             Text(String(localized: "Save 58%"))
                                 .font(.caption2.weight(.bold))
                                 .padding(.horizontal, 8)
@@ -139,34 +141,36 @@ struct PaywallView: View {
                                 .clipShape(Capsule())
                         }
                     }
-                    Text(product.description)
+                    Text(package.storeProduct.localizedDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                Text(product.displayPrice)
+                Text(package.localizedPriceString)
                     .font(.headline)
             }
             .padding()
             .background {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        selectedProduct?.id == product.id ? Color.accentColor : .secondary.opacity(0.3),
-                        lineWidth: selectedProduct?.id == product.id ? 2 : 1
+                        selectedPackage?.identifier == package.identifier ? Color.accentColor : .secondary.opacity(0.3),
+                        lineWidth: selectedPackage?.identifier == package.identifier ? 2 : 1
                     )
-                    .fill(selectedProduct?.id == product.id ? Color.accentColor.opacity(0.05) : .clear)
+                    .fill(selectedPackage?.identifier == package.identifier ? Color.accentColor.opacity(0.05) : .clear)
             }
             .foregroundStyle(.primary)
         }
-        .accessibilityAddTraits(selectedProduct?.id == product.id ? .isSelected : [])
+        .accessibilityAddTraits(selectedPackage?.identifier == package.identifier ? .isSelected : [])
     }
 
     // MARK: - Purchase Button
 
     private var purchaseButton: some View {
-        Button {
+        let isLifetime = selectedPackage?.storeProduct.productIdentifier == StoreManager.lifetimeID
+
+        return Button {
             Task { await purchase() }
         } label: {
             Group {
@@ -174,7 +178,7 @@ struct PaywallView: View {
                     ProgressView()
                         .tint(.white)
                 } else {
-                    Text(selectedProduct?.id == StoreManager.lifetimeID
+                    Text(isLifetime
                          ? String(localized: "Buy Lifetime Access")
                          : String(localized: "Start Free Trial"))
                         .font(.headline)
@@ -185,20 +189,22 @@ struct PaywallView: View {
         }
         .buttonStyle(.borderedProminent)
         .tint(Color.accentColor)
-        .disabled(selectedProduct == nil || isPurchasing)
+        .disabled(selectedPackage == nil || isPurchasing)
     }
 
     // MARK: - Legal
 
     private var legalSection: some View {
         VStack(spacing: 8) {
-            if let product = selectedProduct {
-                if product.id == StoreManager.lifetimeID {
-                    Text(String(localized: "One-time payment of \(product.displayPrice) — yours forever"))
+            if let package = selectedPackage {
+                let isLifetime = package.storeProduct.productIdentifier == StoreManager.lifetimeID
+                if isLifetime {
+                    Text(String(localized: "One-time payment of \(package.localizedPriceString) — yours forever"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
-                    Text(String(localized: "7-day free trial, then \(product.displayPrice)/\(product.id.contains("yearly") ? String(localized: "year") : String(localized: "month"))"))
+                    let isYearly = package.storeProduct.productIdentifier.contains("yearly")
+                    Text(String(localized: "7-day free trial, then \(package.localizedPriceString)/\(isYearly ? String(localized: "year") : String(localized: "month"))"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -220,10 +226,10 @@ struct PaywallView: View {
     // MARK: - Actions
 
     private func purchase() async {
-        guard let product = selectedProduct else { return }
+        guard let package = selectedPackage else { return }
         isPurchasing = true
         do {
-            let success = try await storeManager.purchase(product)
+            let success = try await storeManager.purchase(package)
             if success {
                 dismiss()
             }

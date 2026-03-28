@@ -318,11 +318,10 @@ struct DashboardView: View {
     }
 
     private func logRow(_ log: WaterLog) -> some View {
-        let beverage = Beverage(rawValue: log.beverageType.lowercased())
-        let icon = beverage?.icon ?? "drop.fill"
+        let info = Beverage.displayInfo(for: log.beverageType)
 
         return HStack(spacing: 12) {
-            Image(systemName: icon)
+            Image(systemName: info.icon)
                 .font(.title3)
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 36, height: 36)
@@ -332,7 +331,7 @@ struct DashboardView: View {
                 )
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(beverage?.displayName ?? log.beverageType)
+                Text(info.name)
                     .font(.subheadline.weight(.medium))
                 Text(log.timestamp, style: .time)
                     .font(.caption)
@@ -359,7 +358,7 @@ struct DashboardView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
-            String(localized: "\(beverage?.displayName ?? log.beverageType), \(log.amount.volumeString(unitSystem: viewModel.unitSystem)) at \(log.timestamp.formatted(date: .omitted, time: .shortened))")
+            String(localized: "\(info.name), \(log.amount.volumeString(unitSystem: viewModel.unitSystem)) at \(log.timestamp.formatted(date: .omitted, time: .shortened))")
         )
     }
 }

@@ -115,14 +115,13 @@ struct HistoryView: View {
             ForEach(groupedByDay, id: \.date) { day in
                 Section {
                     ForEach(day.logs, id: \.id) { log in
-                        let beverage = Beverage(rawValue: log.beverageType.lowercased())
-                        let beverageName = beverage?.displayName ?? log.beverageType
+                        let info = Beverage.displayInfo(for: log.beverageType)
                         HStack {
-                            Image(systemName: beverage?.icon ?? "drop.fill")
+                            Image(systemName: info.icon)
                                 .foregroundStyle(Color.accentColor)
 
                             VStack(alignment: .leading) {
-                                Text(beverageName)
+                                Text(info.name)
                                     .font(.subheadline)
                                 Text(log.timestamp, style: .time)
                                     .font(.caption)
@@ -137,7 +136,7 @@ struct HistoryView: View {
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel(
-                            "\(beverageName), \(log.amount.volumeString(unitSystem: unitSystem)) at \(log.timestamp.formatted(date: .omitted, time: .shortened))"
+                            "\(info.name), \(log.amount.volumeString(unitSystem: unitSystem)) at \(log.timestamp.formatted(date: .omitted, time: .shortened))"
                         )
                     }
                 } header: {

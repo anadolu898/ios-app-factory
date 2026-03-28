@@ -1,132 +1,108 @@
 import Foundation
-import StoreKit
+import RevenueCat
 
 @Observable @MainActor
 final class StoreManager {
     static let shared = StoreManager()
 
-    private(set) var products: [Product] = []
-    private(set) var purchasedProductIDs: Set<String> = []
+    private(set) var offerings: Offerings?
+    var customerInfo: CustomerInfo?
     private(set) var isLoading = false
 
     var isPremium: Bool {
-        !purchasedProductIDs.isEmpty
+        customerInfo?.entitlements["premium"]?.isActive ?? false
     }
 
     static let monthlyID = "com.anadolu898.aqualog.premium.monthly"
     static let yearlyID = "com.anadolu898.aqualog.premium.yearly"
     static let lifetimeID = "com.anadolu898.aqualog.premium.lifetime"
 
-    private let transactionListener: Task<Void, Error>
+    // MARK: - RevenueCat API Key (set from App Store Connect)
+    static let revenueCatAPIKey = "appl_REPLACE_WITH_REAL_KEY"
 
-    private init() {
-        transactionListener = Self.listenForTransactions()
-        Task { await loadProducts() }
-        Task { await updatePurchasedProducts() }
+    private init() {}
+
+    // MARK: - Configuration (call from App init)
+
+    func configure() {
+        Purchases.logLevel = .error
+        Purchases.configure(withAPIKey: Self.revenueCatAPIKey)
+        Purchases.shared.delegate = RevenueCatDelegate.shared
+        Task { await loadOfferings() }
+        Task { await refreshCustomerInfo() }
     }
 
-    // MARK: - Load Products
+    // MARK: - Load Offerings
 
-    func loadProducts() async {
+    func loadOfferings() async {
         isLoading = true
         do {
-            products = try await Product.products(for: [
-                Self.monthlyID,
-                Self.yearlyID,
-                Self.lifetimeID
-            ])
-            products.sort { $0.price < $1.price }
+            offerings = try await Purchases.shared.offerings()
         } catch {
-            products = []
+            offerings = nil
         }
         isLoading = false
     }
 
+    // MARK: - Products from Offerings
+
+    var products: [Package] {
+        offerings?.current?.availablePackages ?? []
+    }
+
+    var monthlyPackage: Package? {
+        offerings?.current?.monthly
+    }
+
+    var yearlyPackage: Package? {
+        offerings?.current?.annual
+    }
+
+    var lifetimePackage: Package? {
+        offerings?.current?.lifetime
+    }
+
     // MARK: - Purchase
 
-    func purchase(_ product: Product) async throws -> Bool {
-        let result = try await product.purchase()
-
-        switch result {
-        case .success(let verification):
-            let transaction = try checkVerified(verification)
-            await transaction.finish()
-            await updatePurchasedProducts()
-            return true
-
-        case .userCancelled:
-            return false
-
-        case .pending:
-            return false
-
-        @unknown default:
-            return false
+    func purchase(_ package: Package) async throws -> Bool {
+        do {
+            let result = try await Purchases.shared.purchase(package: package)
+            customerInfo = result.customerInfo
+            return !result.userCancelled
+        } catch {
+            throw error
         }
     }
 
     // MARK: - Restore
 
     func restorePurchases() async {
-        try? await AppStore.sync()
-        await updatePurchasedProducts()
-    }
-
-    // MARK: - Transaction Updates
-
-    private static func listenForTransactions() -> Task<Void, Error> {
-        Task.detached {
-            for await result in Transaction.updates {
-                let verified = try? result.payloadValue
-                if let transaction = verified {
-                    await transaction.finish()
-                    await StoreManager.shared.updatePurchasedProducts()
-                }
-            }
+        do {
+            customerInfo = try await Purchases.shared.restorePurchases()
+        } catch {
+            // Restore failed
         }
     }
 
-    private func updatePurchasedProducts() async {
-        var purchased: Set<String> = []
+    // MARK: - Refresh
 
-        for await result in Transaction.currentEntitlements {
-            do {
-                let transaction = try checkVerified(result)
-                if transaction.revocationDate == nil {
-                    purchased.insert(transaction.productID)
-                }
-            } catch {
-                // Skip unverified
-            }
+    func refreshCustomerInfo() async {
+        do {
+            customerInfo = try await Purchases.shared.customerInfo()
+        } catch {
+            customerInfo = nil
         }
-
-        purchasedProductIDs = purchased
-    }
-
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
-        switch result {
-        case .unverified:
-            throw StoreError.verificationFailed
-        case .verified(let safe):
-            return safe
-        }
-    }
-
-    // MARK: - Helpers
-
-    var monthlyProduct: Product? {
-        products.first { $0.id == Self.monthlyID }
-    }
-
-    var yearlyProduct: Product? {
-        products.first { $0.id == Self.yearlyID }
-    }
-
-    var lifetimeProduct: Product? {
-        products.first { $0.id == Self.lifetimeID }
     }
 }
 
-enum StoreError: Error {
-    case verificationFailed
+// MARK: - RevenueCat Delegate
+
+final class RevenueCatDelegate: NSObject, PurchasesDelegate, @unchecked Sendable {
+    static let shared = RevenueCatDelegate()
+
+    nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        Task { @MainActor in
+            StoreManager.shared.customerInfo = customerInfo
+        }
+    }
 }

@@ -5,7 +5,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allSettings: [UserSettings]
 
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     private var settings: UserSettings? {
         allSettings.first
@@ -300,7 +300,7 @@ struct SettingsView: View {
         for log in allLogs {
             let date = dateFormatter.string(from: log.timestamp)
             let time = timeFormatter.string(from: log.timestamp)
-            let beverage = Beverage(rawValue: log.beverageType.lowercased())?.displayName ?? log.beverageType
+            let beverage = Beverage.displayInfo(for: log.beverageType).name
             let amount: String
             if unitSystem == "imperial" {
                 amount = String(format: "%.1f", Double(log.amount) / 29.5735)

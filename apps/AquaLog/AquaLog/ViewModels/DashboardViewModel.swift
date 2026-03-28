@@ -69,6 +69,7 @@ final class DashboardViewModel {
         updateStreak()
         syncHealthKit()
         checkWorkouts()
+        checkWeather()
     }
 
     // MARK: - Fetch
@@ -263,6 +264,16 @@ final class DashboardViewModel {
     func saveToHealthKit(amount: Int) {
         Task {
             _ = await HealthKitManager.shared.saveWaterIntake(milliliters: amount)
+        }
+    }
+
+    // MARK: - Weather
+
+    private func checkWeather() {
+        Task {
+            let result = await LocationManager.shared.fetchClimate()
+            currentClimate = result.climate
+            weatherAdjustmentML = result.adjustmentML
         }
     }
 
