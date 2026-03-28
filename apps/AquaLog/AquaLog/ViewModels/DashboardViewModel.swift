@@ -10,20 +10,17 @@ final class DashboardViewModel {
 
     private var modelContext: ModelContext?
 
+    // Stored properties — must be stored (not computed) for @Observable to track changes
     var todayLogs: [WaterLog] = []
     var settings: UserSettings?
-
-    var todayTotal: Int {
-        todayLogs.reduce(0) { $0 + $1.amount }
-    }
+    var todayTotal: Int = 0
+    var todayProgress: Double = 0
+    var todayCaffeineMG: Double = 0
+    var currentStreak: Int = 0
+    var longestStreak: Int = 0
 
     var dailyGoal: Int {
         settings?.dailyGoalML ?? 2500
-    }
-
-    var todayProgress: Double {
-        guard dailyGoal > 0 else { return 0 }
-        return Double(todayTotal) / Double(dailyGoal)
     }
 
     var unitSystem: String {
@@ -43,12 +40,17 @@ final class DashboardViewModel {
         todayTotal >= dailyGoal
     }
 
+    var caffeineStatus: (message: String, severity: CaffeineInfo.CaffeineSeverity)? {
+        CaffeineInfo.statusMessage(totalCaffeineMG: todayCaffeineMG)
+    }
+
     // MARK: - Setup
 
     func setup(modelContext: ModelContext) {
         self.modelContext = modelContext
         fetchTodayLogs()
         fetchSettings()
+        updateStreak()
     }
 
     // MARK: - Fetch
@@ -74,6 +76,8 @@ final class DashboardViewModel {
         } catch {
             todayLogs = []
         }
+
+        recalculate()
     }
 
     func fetchSettings() {
@@ -93,6 +97,26 @@ final class DashboardViewModel {
         } catch {
             settings = nil
         }
+
+        recalculate()
+    }
+
+    /// Recalculate all derived stored properties from current data
+    private func recalculate() {
+        let total = todayLogs.reduce(0) { $0 + $1.amount }
+        let goal = dailyGoal
+
+        withAnimation(.easeInOut(duration: 0.5)) {
+            todayTotal = total
+            todayProgress = goal > 0 ? Double(total) / Double(goal) : 0
+        }
+
+        todayCaffeineMG = todayLogs.reduce(0.0) { acc, log in
+            acc + CaffeineInfo.caffeinePerServing(beverage: log.beverageType, amountML: log.amount)
+        }
+
+        currentStreak = settings?.currentStreak ?? 0
+        longestStreak = settings?.longestStreak ?? 0
     }
 
     // MARK: - Actions
@@ -110,7 +134,9 @@ final class DashboardViewModel {
         }
 
         fetchTodayLogs()
+        updateStreak()
         syncToWidgets()
+        scheduleRemindersIfNeeded()
         triggerHaptic()
     }
 
@@ -135,6 +161,53 @@ final class DashboardViewModel {
         defaults?.set(todayTotal, forKey: "todayIntakeML")
         defaults?.set(dailyGoal, forKey: "dailyGoalML")
         WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    // MARK: - Streak Management
+
+    private func updateStreak() {
+        guard let settings, let modelContext else { return }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+
+        // Check if we met today's goal
+        if todayTotal >= dailyGoal {
+            if let lastDate = settings.lastGoalMetDate {
+                let lastDay = calendar.startOfDay(for: lastDate)
+                if calendar.isDate(lastDay, inSameDayAs: today) {
+                    // Already updated today
+                    return
+                }
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+                if calendar.isDate(lastDay, inSameDayAs: yesterday) {
+                    // Consecutive day — extend streak
+                    settings.currentStreak += 1
+                } else {
+                    // Streak broken, start new
+                    settings.currentStreak = 1
+                }
+            } else {
+                settings.currentStreak = 1
+            }
+
+            settings.lastGoalMetDate = .now
+            settings.longestStreak = max(settings.longestStreak, settings.currentStreak)
+            try? modelContext.save()
+        }
+    }
+
+    // MARK: - Notification Scheduling
+
+    private func scheduleRemindersIfNeeded() {
+        guard let settings, settings.reminderEnabled else { return }
+        Task {
+            await NotificationManager.shared.scheduleReminders(
+                intervalMinutes: settings.reminderIntervalMinutes,
+                startHour: settings.reminderStartHour,
+                endHour: settings.reminderEndHour
+            )
+        }
     }
 
     // MARK: - Haptics

@@ -11,6 +11,12 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     progressSection
+                    insightsSection
+
+                    if let caffeineStatus = viewModel.caffeineStatus {
+                        caffeineWarningBanner(caffeineStatus)
+                    }
+
                     quickAddSection
                     recentLogsSection
                 }
@@ -84,6 +90,90 @@ struct DashboardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.regularMaterial)
         )
+    }
+
+    // MARK: - Insights Section (Streaks + Caffeine)
+
+    private var insightsSection: some View {
+        HStack(spacing: 12) {
+            // Streak card
+            VStack(spacing: 6) {
+                Image(systemName: "flame.fill")
+                    .font(.title2)
+                    .foregroundStyle(.orange)
+                Text("\(viewModel.currentStreak)")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                Text(String(localized: "Day Streak"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if viewModel.longestStreak > 0 {
+                    Text(String(localized: "Best: \(viewModel.longestStreak)"))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.regularMaterial)
+            )
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(
+                String(localized: "\(viewModel.currentStreak) day streak, best \(viewModel.longestStreak)")
+            )
+
+            // Caffeine card
+            VStack(spacing: 6) {
+                Image(systemName: "mug.fill")
+                    .font(.title2)
+                    .foregroundStyle(caffeineColor)
+                Text("\(Int(viewModel.todayCaffeineMG))")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                Text(String(localized: "mg Caffeine"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(String(localized: "of \(Int(CaffeineInfo.dailyLimitMG))mg limit"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.regularMaterial)
+            )
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(
+                String(localized: "\(Int(viewModel.todayCaffeineMG)) milligrams caffeine of \(Int(CaffeineInfo.dailyLimitMG)) limit")
+            )
+        }
+    }
+
+    private func caffeineWarningBanner(_ status: (message: String, severity: CaffeineInfo.CaffeineSeverity)) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: status.severity == .critical ? "exclamationmark.triangle.fill" : "info.circle.fill")
+                .foregroundStyle(status.severity == .critical ? .red : .orange)
+            Text(status.message)
+                .font(.caption)
+                .foregroundStyle(.primary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(status.severity == .critical ? Color.red.opacity(0.1) : Color.orange.opacity(0.1))
+        )
+        .accessibilityElement(children: .combine)
+    }
+
+    private var caffeineColor: Color {
+        if viewModel.todayCaffeineMG >= CaffeineInfo.dailyLimitMG {
+            return .red
+        } else if viewModel.todayCaffeineMG >= CaffeineInfo.warningThresholdMG {
+            return .orange
+        }
+        return .brown
     }
 
     // MARK: - Quick Add Section

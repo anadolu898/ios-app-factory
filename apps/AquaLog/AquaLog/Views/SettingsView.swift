@@ -100,6 +100,7 @@ struct SettingsView: View {
                         set: { newValue in
                             settings.reminderEnabled = newValue
                             try? modelContext.save()
+                            handleReminderToggle(enabled: newValue, settings: settings)
                         }
                     )
                 )
@@ -111,6 +112,7 @@ struct SettingsView: View {
                         set: { newValue in
                             settings.reminderIntervalMinutes = newValue
                             try? modelContext.save()
+                            rescheduleReminders(settings: settings)
                         }
                     )) {
                         ForEach(Self.reminderIntervalOptions, id: \.self) { minutes in
@@ -204,6 +206,38 @@ struct SettingsView: View {
             let newSettings = UserSettings()
             modelContext.insert(newSettings)
             try? modelContext.save()
+        }
+    }
+
+    private func handleReminderToggle(enabled: Bool, settings: UserSettings) {
+        if enabled {
+            Task {
+                let granted = await NotificationManager.shared.requestPermission()
+                if granted {
+                    await NotificationManager.shared.scheduleReminders(
+                        intervalMinutes: settings.reminderIntervalMinutes,
+                        startHour: settings.reminderStartHour,
+                        endHour: settings.reminderEndHour
+                    )
+                } else {
+                    await MainActor.run {
+                        settings.reminderEnabled = false
+                        try? modelContext.save()
+                    }
+                }
+            }
+        } else {
+            NotificationManager.shared.cancelAllReminders()
+        }
+    }
+
+    private func rescheduleReminders(settings: UserSettings) {
+        Task {
+            await NotificationManager.shared.scheduleReminders(
+                intervalMinutes: settings.reminderIntervalMinutes,
+                startHour: settings.reminderStartHour,
+                endHour: settings.reminderEndHour
+            )
         }
     }
 }

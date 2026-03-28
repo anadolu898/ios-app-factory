@@ -57,12 +57,19 @@ targets:
     platform: iOS
     sources:
       - path: AquaLogWidgets
+        excludes:
+          - Info.plist
+    info:
+      path: AquaLogWidgets/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.widgets
-        GENERATE_INFOPLIST_FILE: true
+        GENERATE_INFOPLIST_FILE: false
+        INFOPLIST_FILE: AquaLogWidgets/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: AquaLog Widgets
-        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_STYLE: Automatic

@@ -17,8 +17,10 @@ struct SmartOnboardingView: View {
     @State private var unitSystem = "metric"
     @State private var calculatedGoal = 2500
     @State private var showResult = false
+    @State private var remindersEnabled = true
+    @State private var reminderInterval = 60
 
-    private let totalSteps = 5
+    private let totalSteps = 6
 
     var body: some View {
         ZStack {
@@ -43,6 +45,7 @@ struct SmartOnboardingView: View {
                     activityStep.tag(2)
                     scheduleStep.tag(3)
                     resultStep.tag(4)
+                    remindersStep.tag(5)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.3), value: step)
@@ -410,6 +413,73 @@ struct SmartOnboardingView: View {
         }
     }
 
+    // MARK: - Step 5: Reminders
+
+    private var remindersStep: some View {
+        VStack(spacing: 28) {
+            Spacer()
+
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 70))
+                .foregroundStyle(
+                    LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .symbolEffect(.bounce, options: .repeating.speed(0.5))
+
+            VStack(spacing: 12) {
+                Text(String(localized: "Stay on Track"))
+                    .font(.largeTitle.bold())
+
+                Text(String(localized: "Get gentle reminders throughout the day so you never forget to drink."))
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+
+            // Reminder toggle
+            VStack(spacing: 16) {
+                Toggle(isOn: $remindersEnabled) {
+                    Label(String(localized: "Drink Reminders"), systemImage: "drop.fill")
+                        .font(.subheadline.weight(.medium))
+                }
+                .tint(.blue)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(.systemGray6))
+                )
+
+                if remindersEnabled {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "Remind me every"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+
+                        Picker(String(localized: "Interval"), selection: $reminderInterval) {
+                            Text(String(localized: "30 min")).tag(30)
+                            Text(String(localized: "1 hour")).tag(60)
+                            Text(String(localized: "1.5 hours")).tag(90)
+                            Text(String(localized: "2 hours")).tag(120)
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color(.systemGray6))
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .padding(.horizontal, 24)
+            .animation(.easeInOut(duration: 0.3), value: remindersEnabled)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
     // MARK: - Components
 
     private func stepHeader(icon: String, title: String, subtitle: String) -> some View {
@@ -462,8 +532,8 @@ struct SmartOnboardingView: View {
             }
         } label: {
             Text(step == 0 ? String(localized: "Let's Go")
-                 : step < totalSteps - 1 ? String(localized: "Continue")
-                 : String(localized: "Start Tracking"))
+                 : step == totalSteps - 1 ? String(localized: "Start Tracking")
+                 : String(localized: "Continue"))
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -519,22 +589,25 @@ struct SmartOnboardingView: View {
         let wakeComps = Calendar.current.dateComponents([.hour, .minute], from: wakeUpTime)
         let bedComps = Calendar.current.dateComponents([.hour, .minute], from: bedTime)
 
+        let startHour = wakeComps.hour ?? 7
+        let endHour = bedComps.hour ?? 23
+
         let settings = UserSettings(
             dailyGoalML: calculatedGoal,
             unitSystem: unitSystem,
-            reminderEnabled: true,
-            reminderIntervalMinutes: 60,
-            reminderStartHour: wakeComps.hour ?? 7,
-            reminderEndHour: bedComps.hour ?? 23,
+            reminderEnabled: remindersEnabled,
+            reminderIntervalMinutes: reminderInterval,
+            reminderStartHour: startHour,
+            reminderEndHour: endHour,
             hasCompletedOnboarding: true,
             isPremium: false,
             weightKg: weightKg,
             age: Int(age),
             gender: gender.rawValue,
             activityLevel: activityLevel.rawValue,
-            wakeUpHour: wakeComps.hour ?? 7,
+            wakeUpHour: startHour,
             wakeUpMinute: wakeComps.minute ?? 0,
-            bedtimeHour: bedComps.hour ?? 23,
+            bedtimeHour: endHour,
             bedtimeMinute: bedComps.minute ?? 0,
             isPregnant: isPregnant,
             isBreastfeeding: isBreastfeeding
@@ -543,6 +616,20 @@ struct SmartOnboardingView: View {
 
         modelContext.insert(settings)
         try? modelContext.save()
+
+        // Request notification permission and schedule reminders
+        if remindersEnabled {
+            Task {
+                let granted = await NotificationManager.shared.requestPermission()
+                if granted {
+                    await NotificationManager.shared.scheduleReminders(
+                        intervalMinutes: reminderInterval,
+                        startHour: startHour,
+                        endHour: endHour
+                    )
+                }
+            }
+        }
 
         withAnimation {
             hasCompletedOnboarding = true
