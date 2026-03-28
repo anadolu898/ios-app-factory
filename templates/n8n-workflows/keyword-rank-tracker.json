@@ -1,0 +1,73 @@
+{
+  "_comment": "n8n Workflow Template: Daily Keyword Rank Tracker",
+  "_description": "Tracks keyword positions daily via Appeeky API, stores history, alerts on significant changes (+/- 10 positions)",
+  "_setup": "1. Import into n8n. 2. Set APPEEKY_API_KEY. 3. Configure storage (Supabase/Google Sheets). 4. Set alert webhook.",
+  "name": "Daily Keyword Rank Tracker",
+  "nodes": [
+    {
+      "name": "Daily Trigger (6am)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 6 * * *" }]
+        }
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Load App Keywords Config",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "// Define apps and their tracked keywords\nconst apps = [\n  {\n    appId: 'YOUR_APP_ID',\n    name: 'AquaLog',\n    keywords: ['water tracker', 'hydration', 'drink reminder', 'water intake', 'health tracker']\n  }\n  // Add more apps as portfolio grows\n];\nreturn apps.map(app => ({ json: app }));"
+      },
+      "position": [450, 300]
+    },
+    {
+      "name": "Fetch Rankings (Appeeky)",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.appeeky.com/v1/keywords/rankings",
+        "method": "GET",
+        "queryParameters": {
+          "parameters": [
+            { "name": "app_id", "value": "={{ $json.appId }}" },
+            { "name": "keywords", "value": "={{ $json.keywords.join(',') }}" }
+          ]
+        },
+        "headers": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "YOUR_APPEEKY_KEY" }
+          ]
+        }
+      },
+      "position": [650, 300]
+    },
+    {
+      "name": "Compare to Previous Day",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "// Compare current rankings to stored previous day\n// Alert if any keyword moved +/- 10 positions\nconst current = $input.all();\nconst alerts = [];\n// ... comparison logic ...\nreturn alerts.length > 0 ? alerts.map(a => ({json: a})) : [{json: {status: 'no_changes'}}];"
+      },
+      "position": [850, 300]
+    },
+    {
+      "name": "Store Rankings",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "_comment": "Store to Supabase keyword_rankings table",
+        "url": "YOUR_SUPABASE_URL/rest/v1/keyword_rankings",
+        "method": "POST"
+      },
+      "position": [850, 450]
+    },
+    {
+      "name": "Alert on Big Changes",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "YOUR_SLACK_WEBHOOK",
+        "method": "POST"
+      },
+      "position": [1050, 300]
+    }
+  ]
+}

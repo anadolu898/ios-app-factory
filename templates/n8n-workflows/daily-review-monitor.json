@@ -1,0 +1,67 @@
+{
+  "_comment": "n8n Workflow Template: Daily App Review Monitor",
+  "_description": "Fetches new reviews from Appfigures, runs sentiment analysis, drafts responses, alerts on negative reviews",
+  "_setup": "1. Import into n8n. 2. Set APPFIGURES_API_KEY credential. 3. Set Slack/Discord webhook for alerts.",
+  "name": "Daily Review Monitor",
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 12 }]
+        }
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Fetch Reviews (Appfigures)",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.appfigures.com/v2/reviews",
+        "method": "GET",
+        "queryParameters": {
+          "parameters": [
+            { "name": "start", "value": "={{ $now.minus({days: 1}).toISO() }}" },
+            { "name": "count", "value": "50" }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "position": [450, 300]
+    },
+    {
+      "name": "Filter Negative (< 3 stars)",
+      "type": "n8n-nodes-base.filter",
+      "parameters": {
+        "conditions": {
+          "number": [{ "value1": "={{ $json.stars }}", "operation": "smallerEqual", "value2": 3 }]
+        }
+      },
+      "position": [650, 200]
+    },
+    {
+      "name": "Alert on Negative Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "YOUR_SLACK_WEBHOOK_URL",
+        "method": "POST",
+        "body": {
+          "text": "New {{ $json.stars }}-star review for {{ $json.product_name }}: \"{{ $json.review }}\""
+        }
+      },
+      "position": [850, 200]
+    },
+    {
+      "name": "Log All Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "_comment": "POST to Supabase or append to Google Sheet",
+        "url": "YOUR_SUPABASE_URL/rest/v1/reviews",
+        "method": "POST"
+      },
+      "position": [650, 400]
+    }
+  ]
+}

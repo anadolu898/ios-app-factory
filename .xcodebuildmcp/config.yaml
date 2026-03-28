@@ -1,0 +1,6 @@
+schemaVersion: 1
+sessionDefaults:
+  configuration: Debug
+  simulatorName: iPhone 17 Pro
+  simulatorId: 81209F5D-4C8C-4B90-9B09-A92A4E6F2031
+  simulatorPlatform: iOS Simulator

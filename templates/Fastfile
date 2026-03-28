@@ -1,0 +1,91 @@
+# Autonomous iOS App Factory — Fastlane Template
+# Copy this into each app's fastlane/ directory and customize APP_NAME and BUNDLE_ID
+
+default_platform(:ios)
+
+# --- Customize these per app ---
+APP_NAME = "YourAppName"
+BUNDLE_ID = "com.anadolu898.yourapp"
+TEAM_ID = "YOUR_TEAM_ID"          # Apple Developer Team ID
+ITC_TEAM_ID = "YOUR_ITC_TEAM_ID"  # App Store Connect Team ID
+# --------------------------------
+
+platform :ios do
+
+  desc "Run tests on multiple simulators"
+  lane :test do
+    scan(
+      scheme: APP_NAME,
+      devices: [
+        "iPhone 17 Pro",
+        "iPhone 16e",
+        "iPad Pro 13-inch (M5)"
+      ],
+      clean: true,
+      code_coverage: true
+    )
+  end
+
+  desc "Build and archive for App Store"
+  lane :build do
+    build_app(
+      scheme: APP_NAME,
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "#{APP_NAME}.ipa"
+    )
+  end
+
+  desc "Upload to App Store Connect (TestFlight)"
+  lane :beta do
+    build
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Submit to App Store for review"
+  lane :release do
+    build
+    upload_to_app_store(
+      force: true,
+      submit_for_review: true,
+      automatic_release: true,
+      submission_information: {
+        add_id_info_uses_idfa: false
+      }
+    )
+  end
+
+  desc "Take App Store screenshots"
+  lane :screenshots do
+    capture_screenshots(
+      scheme: "#{APP_NAME}UITests",
+      devices: [
+        "iPhone 17 Pro Max",
+        "iPhone 17 Pro",
+        "iPhone 16e",
+        "iPad Pro 13-inch (M5)"
+      ],
+      output_directory: "./Screenshots",
+      clean: true,
+      override_status_bar: true
+    )
+  end
+
+  desc "Upload metadata + screenshots to ASC"
+  lane :metadata do
+    deliver(
+      skip_binary_upload: true,
+      force: true,
+      metadata_path: "./Metadata/fastlane",
+      screenshots_path: "./Screenshots"
+    )
+  end
+
+  # --- Error handling ---
+  error do |lane, exception|
+    puts "Error in lane #{lane}: #{exception.message}"
+  end
+end

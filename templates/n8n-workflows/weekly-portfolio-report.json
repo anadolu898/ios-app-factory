@@ -1,0 +1,62 @@
+{
+  "_comment": "n8n Workflow Template: Weekly Portfolio Report",
+  "_description": "Aggregates MRR, downloads, ratings across all apps. Generates summary email/Slack report.",
+  "_setup": "1. Import into n8n. 2. Configure RevenueCat + Appfigures credentials. 3. Set email/Slack destination.",
+  "name": "Weekly Portfolio Report",
+  "nodes": [
+    {
+      "name": "Weekly Trigger (Monday 9am)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * 1" }]
+        }
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Fetch RevenueCat Overview",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.revenuecat.com/v2/projects/YOUR_PROJECT_ID/metrics/overview",
+        "method": "GET",
+        "authentication": "genericCredentialType"
+      },
+      "position": [450, 200]
+    },
+    {
+      "name": "Fetch Appfigures Rankings",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.appfigures.com/v2/ranks",
+        "method": "GET",
+        "authentication": "genericCredentialType"
+      },
+      "position": [450, 400]
+    },
+    {
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.merge",
+      "parameters": { "mode": "append" },
+      "position": [650, 300]
+    },
+    {
+      "name": "Format Report",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "// Format portfolio summary\nconst items = $input.all();\nlet report = '# Weekly Portfolio Report\\n\\n';\nreport += `Generated: ${new Date().toISOString().split('T')[0]}\\n\\n`;\nreport += '| App | MRR | Downloads | Rating | Trend |\\n';\nreport += '|-----|-----|-----------|--------|-------|\\n';\n// Add rows from merged data...\nreturn [{ json: { report } }];"
+      },
+      "position": [850, 300]
+    },
+    {
+      "name": "Send Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "_comment": "Send via Slack webhook, email, or save to Google Doc",
+        "url": "YOUR_DESTINATION_WEBHOOK",
+        "method": "POST"
+      },
+      "position": [1050, 300]
+    }
+  ]
+}

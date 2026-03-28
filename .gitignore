@@ -55,6 +55,41 @@ Authkey_*.p8
 # Node (for MCP tools)
 node_modules/
 
+# Skills installer symlinks (other AI tools)
+.adal/
+.augment/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+.claude/skills/
+skills/
+skills-lock.json
+
+# Secrets
+.env
+
 # Misc
 *.log
 tmp/

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ios-preview",
+      "runtimeExecutable": "xcrun",
+      "runtimeArgs": ["simctl", "io", "booted", "recordVideo", "--codec=h264", "/tmp/preview.mp4"],
+      "port": 0
+    }
+  ]
+}
