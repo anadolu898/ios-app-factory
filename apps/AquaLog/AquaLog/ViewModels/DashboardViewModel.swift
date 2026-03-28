@@ -10,20 +10,17 @@ final class DashboardViewModel {
 
     private var modelContext: ModelContext?
 
+    // Stored properties — must be stored (not computed) for @Observable to track changes
     var todayLogs: [WaterLog] = []
     var settings: UserSettings?
-
-    var todayTotal: Int {
-        todayLogs.reduce(0) { $0 + $1.amount }
-    }
+    var todayTotal: Int = 0
+    var todayProgress: Double = 0
+    var todayCaffeineMG: Double = 0
+    var currentStreak: Int = 0
+    var longestStreak: Int = 0
 
     var dailyGoal: Int {
         settings?.dailyGoalML ?? 2500
-    }
-
-    var todayProgress: Double {
-        guard dailyGoal > 0 else { return 0 }
-        return Double(todayTotal) / Double(dailyGoal)
     }
 
     var unitSystem: String {
@@ -43,26 +40,8 @@ final class DashboardViewModel {
         todayTotal >= dailyGoal
     }
 
-    // MARK: - Caffeine Tracking
-
-    var todayCaffeineMG: Double {
-        todayLogs.reduce(0.0) { total, log in
-            total + CaffeineInfo.caffeinePerServing(beverage: log.beverageType, amountML: log.amount)
-        }
-    }
-
     var caffeineStatus: (message: String, severity: CaffeineInfo.CaffeineSeverity)? {
         CaffeineInfo.statusMessage(totalCaffeineMG: todayCaffeineMG)
-    }
-
-    // MARK: - Streaks
-
-    var currentStreak: Int {
-        settings?.currentStreak ?? 0
-    }
-
-    var longestStreak: Int {
-        settings?.longestStreak ?? 0
     }
 
     // MARK: - Setup
@@ -97,6 +76,8 @@ final class DashboardViewModel {
         } catch {
             todayLogs = []
         }
+
+        recalculate()
     }
 
     func fetchSettings() {
@@ -116,6 +97,26 @@ final class DashboardViewModel {
         } catch {
             settings = nil
         }
+
+        recalculate()
+    }
+
+    /// Recalculate all derived stored properties from current data
+    private func recalculate() {
+        let total = todayLogs.reduce(0) { $0 + $1.amount }
+        let goal = dailyGoal
+
+        withAnimation(.easeInOut(duration: 0.5)) {
+            todayTotal = total
+            todayProgress = goal > 0 ? Double(total) / Double(goal) : 0
+        }
+
+        todayCaffeineMG = todayLogs.reduce(0.0) { acc, log in
+            acc + CaffeineInfo.caffeinePerServing(beverage: log.beverageType, amountML: log.amount)
+        }
+
+        currentStreak = settings?.currentStreak ?? 0
+        longestStreak = settings?.longestStreak ?? 0
     }
 
     // MARK: - Actions

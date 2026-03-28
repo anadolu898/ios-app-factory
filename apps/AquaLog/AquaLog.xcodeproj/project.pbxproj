@@ -10,7 +10,6 @@
 		02D70E19D7CBF1D7FF1D4E67 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CBF37C288A07CEFE86CAB6 /* MainTabView.swift */; };
 		099937A8B2D547E8D077900B /* AquaLogWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776D47DCA004DDAF02CAB8B6 /* AquaLogWidgets.swift */; };
 		09C50544F4C0314E18C9DCDD /* Date+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CC066C5ACA2DCFD6511793 /* Date+Helpers.swift */; };
-		129173CD824F82A826674B99 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B78D1006DD8B86CF3437A5 /* OnboardingView.swift */; };
 		13F9A65F04F12AF05C529637 /* AquaLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 566C80672CD8B36E56731151 /* AquaLogTests.swift */; };
 		151349D47D4907B5F9E4AA1C /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */; };
 		17DD844AAFC074CEE60CB2BC /* HydrationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC69A2C29B6721F35DE99E64 /* HydrationCalculator.swift */; };
@@ -77,7 +76,6 @@
 		4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
 		52F8EEC484713383D827CB9B /* Int+Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Volume.swift"; sourceTree = "<group>"; };
 		566C80672CD8B36E56731151 /* AquaLogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AquaLogTests.swift; sourceTree = "<group>"; };
-		56B78D1006DD8B86CF3437A5 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		65E6A9BF1FAB3402A4B13A03 /* AquaLogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AquaLogApp.swift; sourceTree = "<group>"; };
 		68BA50280346C28A7CA214CE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6D35D47EE9AC85F5D5168902 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
@@ -186,7 +184,6 @@
 		B224AC2194FA2D12D0D5572F /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
-				56B78D1006DD8B86CF3437A5 /* OnboardingView.swift */,
 				D1179426186CE2FE5744BD19 /* SmartOnboardingView.swift */,
 			);
 			path = Onboarding;
@@ -385,7 +382,6 @@
 				AE3DCCA12E93A273AEEF965C /* Int+Volume.swift in Sources */,
 				02D70E19D7CBF1D7FF1D4E67 /* MainTabView.swift in Sources */,
 				BC575D1F8E7FA919A39907B8 /* NotificationManager.swift in Sources */,
-				129173CD824F82A826674B99 /* OnboardingView.swift in Sources */,
 				8C497653BB4A35555C94DF06 /* PaywallView.swift in Sources */,
 				711B82AECE5F4DB82F2430B1 /* ProgressRingView.swift in Sources */,
 				FC3D16B9667CCF6E28D71751 /* SettingsView.swift in Sources */,
