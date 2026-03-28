@@ -14,21 +14,29 @@ I've tried WaterMinder, Waterllama, and a handful of others. They're fine apps, 
 - Open the app? Here's a full-screen ad.
 - 300MB for... a water tracker?
 
-So I built AquaLog. Here's what it does:
+So I built AquaLog. It's not just a logger — it actually understands what you're drinking and what it does to your body.
 
-- **One-tap water logging** with quick-add buttons (150, 250, 350, 500 mL)
-- **Track all beverages free** — water, tea, coffee, juice, smoothies
-- **Home Screen & Lock Screen widgets** so you don't even need to open the app
-- **Weekly charts** to see your hydration patterns
-- **Dark Mode** (obviously free, it's 2026)
-- **Apple Health sync**
-- **2.8 MB** total app size
+**Free features:**
+- One-tap logging for 23 beverages (water, coffee, tea, beer, wine, energy drinks...)
+- **Interactive Home Screen widgets** — tap to log without opening the app
+- **Live Activity + Dynamic Island** — progress ring on your lock screen all day
+- **Control Center widget** — swipe down, tap, logged in 2 seconds
+- Apple Watch app with complications
+- Smart reminders that adapt to your progress ("you're only at 30%, catch up!")
+- Dark Mode, Apple Health sync, Siri Shortcuts
 
-There's a premium tier ($3.99/mo) for analytics, data export, and custom beverages, but the core tracking is completely free with no ads.
+**The smart part (Pro, $1.99/mo or $19.99 lifetime):**
+- **Caffeine half-life tracker** — shows exactly how much caffeine is in your system right now, when it'll clear, and if it'll affect your sleep
+- **Alcohol dehydration calculator** — log a glass of wine, see exactly how much extra water you need to compensate + liver recovery time
+- **Health Timeline** — "7 days of hitting your goal → your kidney function has improved" with actual research citations
+- **Weekly Body Report** — net hydration score, caffeine/sugar/alcohol breakdown
+- 23 beverages with full nutrition data (caffeine, sugar, ABV, calories, net hydration factor)
 
-Built with SwiftUI + SwiftData, native iOS through and through. No web views, no React Native, no cross-platform jank.
+No ads. No forced subscriptions. No 300MB download.
 
-Would love feedback — what features would make this your daily driver?
+Built with SwiftUI + SwiftData. The caffeine tracker alone is worth it if you're a coffee drinker — no other water app shows you a pharmacokinetic decay curve of your caffeine level.
+
+Would love feedback — especially from coffee/wine drinkers. What else would you want to know about what your drinks do to your body?
 
 [App Store link]
 
@@ -36,12 +44,12 @@ Would love feedback — what features would make this your daily driver?
 
 ## Product Hunt
 
-**Tagline**: The water tracker that doesn't make you pay to track water
+**Tagline**: The water tracker that knows what your drinks do to your body
 
 **Description**:
-AquaLog is a simple, beautiful hydration tracker for iOS. One-tap logging, Home Screen widgets, Apple Health sync — and it actually lets you use it for free.
+AquaLog is the first hydration app with a Body Intelligence Engine. It doesn't just log water — it tracks caffeine half-life in your system, calculates how much alcohol dehydrates you, and shows research-backed health milestones as you build a hydration streak.
 
-No ads. No accounts. No 300MB download. Just water tracking done right.
+Log from your home screen widget, Dynamic Island, Control Center, Apple Watch, or Siri — without ever opening the app. Free core tracking, AI insights with Pro ($1.99/mo).
 
 **Topics**: Health, iOS, Productivity, Wellness
 
