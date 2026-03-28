@@ -48,6 +48,9 @@ struct ProgressRingView: View {
             }
         }
         .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Hydration progress"))
+        .accessibilityValue(String(localized: "\(Int((progress * 100).rounded())) percent"))
         .onAppear {
             withAnimation(.easeOut(duration: 0.8)) {
                 animatedProgress = progress

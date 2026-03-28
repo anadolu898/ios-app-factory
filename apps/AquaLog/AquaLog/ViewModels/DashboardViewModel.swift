@@ -97,7 +97,7 @@ final class DashboardViewModel {
 
     // MARK: - Actions
 
-    func addDrink(amount: Int, beverageType: String = "Water", note: String? = nil) {
+    func addDrink(amount: Int, beverageType: String = "water", note: String? = nil) {
         guard let modelContext else { return }
 
         let log = WaterLog(amount: amount, beverageType: beverageType, note: note)

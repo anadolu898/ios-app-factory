@@ -36,7 +36,7 @@ struct AddDrinkSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Add")) {
                         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
-                        onAdd(amountValue, selectedBeverage.displayName, trimmedNote.isEmpty ? nil : trimmedNote)
+                        onAdd(amountValue, selectedBeverage.rawValue, trimmedNote.isEmpty ? nil : trimmedNote)
                         dismiss()
                     }
                     .fontWeight(.semibold)

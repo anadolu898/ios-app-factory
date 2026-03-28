@@ -195,7 +195,7 @@ struct DashboardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(.regularMaterial)
         )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        .contextMenu {
             Button(role: .destructive) {
                 viewModel.deleteDrink(log)
             } label: {

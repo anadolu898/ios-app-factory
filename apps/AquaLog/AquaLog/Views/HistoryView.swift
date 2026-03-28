@@ -11,6 +11,10 @@ struct HistoryView: View {
         settingsQuery.first?.dailyGoalML ?? 2500
     }
 
+    private var unitSystem: String {
+        settingsQuery.first?.unitSystem ?? "metric"
+    }
+
     private var groupedByDay: [(date: Date, logs: [WaterLog], total: Int)] {
         let calendar = Calendar.current
         let grouped = Dictionary(grouping: allLogs) { log in
@@ -91,7 +95,7 @@ struct HistoryView: View {
                         AxisGridLine()
                         AxisValueLabel {
                             if let intValue = value.as(Int.self) {
-                                Text(intValue.volumeString(unitSystem: "metric"))
+                                Text(intValue.volumeString(unitSystem: unitSystem))
                                     .font(.caption2)
                             }
                         }
@@ -127,20 +131,20 @@ struct HistoryView: View {
 
                             Spacer()
 
-                            Text(log.amount.volumeString(unitSystem: "metric"))
+                            Text(log.amount.volumeString(unitSystem: unitSystem))
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(.secondary)
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel(
-                            "\(beverageName), \(log.amount.volumeString(unitSystem: "metric")) at \(log.timestamp.formatted(date: .omitted, time: .shortened))"
+                            "\(beverageName), \(log.amount.volumeString(unitSystem: unitSystem)) at \(log.timestamp.formatted(date: .omitted, time: .shortened))"
                         )
                     }
                 } header: {
                     HStack {
                         Text(day.date, style: .date)
                         Spacer()
-                        Text(String(localized: "Total: \(day.total.volumeString(unitSystem: "metric"))"))
+                        Text(String(localized: "Total: \(day.total.volumeString(unitSystem: unitSystem))"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(Color.accentColor)
                     }
