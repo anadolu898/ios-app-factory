@@ -4,12 +4,16 @@ struct ProgressRingView: View {
     let progress: Double // 0.0 to 1.0+
     let lineWidth: CGFloat
     let size: CGFloat
-    var gradientColors: [Color] = [.accentColor, Color.blue.opacity(0.6)]
+    var gradientColors: [Color] = [Color.cyan, .accentColor]
 
     @State private var animatedProgress: Double = 0
 
     private var clampedProgress: Double {
         min(max(animatedProgress, 0), 1.0)
+    }
+
+    private var ringRadius: CGFloat {
+        (size - lineWidth) / 2
     }
 
     var body: some View {
@@ -21,15 +25,14 @@ struct ProgressRingView: View {
                     lineWidth: lineWidth
                 )
 
-            // Progress ring
+            // Progress ring — solid color for clean appearance at all fill levels
             Circle()
                 .trim(from: 0, to: clampedProgress)
                 .stroke(
-                    AngularGradient(
-                        gradient: Gradient(colors: gradientColors),
-                        center: .center,
-                        startAngle: .degrees(-90),
-                        endAngle: .degrees(270)
+                    LinearGradient(
+                        colors: gradientColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     ),
                     style: StrokeStyle(
                         lineWidth: lineWidth,
@@ -37,15 +40,6 @@ struct ProgressRingView: View {
                     )
                 )
                 .rotationEffect(.degrees(-90))
-
-            // End cap circle for polish
-            if clampedProgress > 0.02 {
-                Circle()
-                    .fill(gradientColors.last ?? Color.blue.opacity(0.6))
-                    .frame(width: lineWidth, height: lineWidth)
-                    .offset(y: -size / 2)
-                    .rotationEffect(.degrees(360 * clampedProgress - 90))
-            }
         }
         .frame(width: size, height: size)
         .accessibilityElement(children: .ignore)
