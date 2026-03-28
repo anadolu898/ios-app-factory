@@ -16,8 +16,11 @@
 		17C59D42EC0157AF6C606C3B /* AlcoholCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92CA513C5C1672EBE49275E /* AlcoholCalculator.swift */; };
 		17DD844AAFC074CEE60CB2BC /* HydrationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC69A2C29B6721F35DE99E64 /* HydrationCalculator.swift */; };
 		19A6864A211B897C731D93E8 /* BeverageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4255F75E3F253988A61C89E /* BeverageType.swift */; };
+		1D5B4E548A38C0B0364901ED /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C2801A5264314FE9618484 /* AppIntents.swift */; };
+		2A5D019B2181BA08368C9CA7 /* BodyReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FC279B3A991685AACEA9FC /* BodyReportView.swift */; };
 		324B2CF77A9B770EC99190DF /* WaterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB560F03BACD80C0D809C2F5 /* WaterLog.swift */; };
 		33A1C6CAEEED7B8823F4C2AE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D43B5A690DCD6FA0335EE4C /* DashboardViewModel.swift */; };
+		458E4C86FA7A5CF87814CD78 /* WorkoutDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */; };
 		47A49858B38166CB9A38811C /* WatchDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89AE663BF55FEDA930C61E5 /* WatchDashboardView.swift */; };
 		4C30CEF5AA2B58D898211286 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D35D47EE9AC85F5D5168902 /* StoreManager.swift */; };
 		4F8136DA6E8F604794B1CBDF /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3D8719588488E415990128 /* DashboardView.swift */; };
@@ -40,6 +43,7 @@
 		C0A6205BC8DE649EA0668DA0 /* HealthInsightsGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AC61E8C4A6CE6B2F312BDE /* HealthInsightsGenerator.swift */; };
 		C30E67E673AA3AFF1FB150EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68BA50280346C28A7CA214CE /* Assets.xcassets */; };
 		D9BA1DB62AF091A3256A47AA /* AquaLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E6A9BF1FAB3402A4B13A03 /* AquaLogApp.swift */; };
+		DB51FC741D5EAADB17154DD8 /* CaffeineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4BDBE5B71A50C55452C6AB /* CaffeineChartView.swift */; };
 		EEAD80BE5A296C5C3C41B365 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0330CD27B4E0CBDD5F7AEC1E /* UserSettings.swift */; };
 		FC3D16B9667CCF6E28D71751 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B636CACFD6ED38AEA545DDF /* SettingsView.swift */; };
 /* End PBXBuildFile section */
@@ -96,18 +100,22 @@
 		6D35D47EE9AC85F5D5168902 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
 		6D436E2130DF078426BA524E /* ProgressRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRingView.swift; sourceTree = "<group>"; };
 		6DFE49686C08CBAC42D9B8FF /* HealthTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthTimelineView.swift; sourceTree = "<group>"; };
+		73C2801A5264314FE9618484 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		776D47DCA004DDAF02CAB8B6 /* AquaLogWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AquaLogWidgets.swift; sourceTree = "<group>"; };
 		81E6E0EBD29FB0EB8F728B43 /* AquaLogProducts.storekit */ = {isa = PBXFileReference; path = AquaLogProducts.storekit; sourceTree = "<group>"; };
 		89E871455B238DD89D959FB0 /* AquaLogWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AquaLogWatchApp.swift; sourceTree = "<group>"; };
 		90121499B10BA08ED04135AA /* AquaLog.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AquaLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		90670B485D1CBAFED402F220 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		9D4BDBE5B71A50C55452C6AB /* CaffeineChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineChartView.swift; sourceTree = "<group>"; };
 		A13DD13E3D44AD5289BBACB4 /* WatchComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchComplication.swift; sourceTree = "<group>"; };
+		A1FC279B3A991685AACEA9FC /* BodyReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyReportView.swift; sourceTree = "<group>"; };
 		A3B3BDDEA251D1CD04DF93B0 /* AquaLogWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AquaLogWidgets.entitlements; sourceTree = "<group>"; };
 		A7CBF37C288A07CEFE86CAB6 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		B3668D5CDDB24B7E4F7CAA1E /* CaffeineTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineTracker.swift; sourceTree = "<group>"; };
 		B3C38BFFDF4D6E0D32531805 /* NutrientDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientDatabase.swift; sourceTree = "<group>"; };
 		C25C5DB9F1469909C0CC79A5 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		D1179426186CE2FE5744BD19 /* SmartOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartOnboardingView.swift; sourceTree = "<group>"; };
+		D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetector.swift; sourceTree = "<group>"; };
 		D89AE663BF55FEDA930C61E5 /* WatchDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDashboardView.swift; sourceTree = "<group>"; };
 		DCFA46516E0E58240863BB78 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		DF3D8719588488E415990128 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -132,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				E92CA513C5C1672EBE49275E /* AlcoholCalculator.swift */,
+				73C2801A5264314FE9618484 /* AppIntents.swift */,
 				B3668D5CDDB24B7E4F7CAA1E /* CaffeineTracker.swift */,
 				37AC61E8C4A6CE6B2F312BDE /* HealthInsightsGenerator.swift */,
 				4F606B5C4053BE85EE9ACBDF /* HealthKitManager.swift */,
@@ -140,6 +149,7 @@
 				B3C38BFFDF4D6E0D32531805 /* NutrientDatabase.swift */,
 				008F689B1E1D75A79245C916 /* SmartNotificationManager.swift */,
 				6D35D47EE9AC85F5D5168902 /* StoreManager.swift */,
+				D3F87397EA7062D4D54C48A6 /* WorkoutDetector.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -242,6 +252,8 @@
 			isa = PBXGroup;
 			children = (
 				FAE36AFEACCB4338C3660E56 /* AddDrinkSheet.swift */,
+				A1FC279B3A991685AACEA9FC /* BodyReportView.swift */,
+				9D4BDBE5B71A50C55452C6AB /* CaffeineChartView.swift */,
 				DF3D8719588488E415990128 /* DashboardView.swift */,
 				6DFE49686C08CBAC42D9B8FF /* HealthTimelineView.swift */,
 				DCFA46516E0E58240863BB78 /* HistoryView.swift */,
@@ -455,8 +467,11 @@
 			files = (
 				A56275120CB1F3D357D3CE63 /* AddDrinkSheet.swift in Sources */,
 				17C59D42EC0157AF6C606C3B /* AlcoholCalculator.swift in Sources */,
+				1D5B4E548A38C0B0364901ED /* AppIntents.swift in Sources */,
 				D9BA1DB62AF091A3256A47AA /* AquaLogApp.swift in Sources */,
 				19A6864A211B897C731D93E8 /* BeverageType.swift in Sources */,
+				2A5D019B2181BA08368C9CA7 /* BodyReportView.swift in Sources */,
+				DB51FC741D5EAADB17154DD8 /* CaffeineChartView.swift in Sources */,
 				B58E8307B2F7076A1833C30E /* CaffeineTracker.swift in Sources */,
 				69C069891D05A9D355E37E15 /* ContentView.swift in Sources */,
 				4F8136DA6E8F604794B1CBDF /* DashboardView.swift in Sources */,
@@ -479,6 +494,7 @@
 				4C30CEF5AA2B58D898211286 /* StoreManager.swift in Sources */,
 				EEAD80BE5A296C5C3C41B365 /* UserSettings.swift in Sources */,
 				324B2CF77A9B770EC99190DF /* WaterLog.swift in Sources */,
+				458E4C86FA7A5CF87814CD78 /* WorkoutDetector.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

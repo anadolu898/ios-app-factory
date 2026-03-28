@@ -16,6 +16,10 @@ struct DashboardView: View {
                         weatherBanner(weatherMsg)
                     }
 
+                    if let workout = viewModel.workoutAdvice {
+                        workoutBanner(workout)
+                    }
+
                     insightsSection
 
                     if let caffeineStatus = viewModel.caffeineStatus {
@@ -112,6 +116,25 @@ struct DashboardView: View {
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.orange.opacity(0.1))
+        )
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Workout Banner
+
+    private func workoutBanner(_ advice: WorkoutDetector.WorkoutHydrationAdvice) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "figure.run")
+                .foregroundStyle(.green)
+            Text(advice.message)
+                .font(.caption)
+                .foregroundStyle(.primary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.green.opacity(0.1))
         )
         .accessibilityElement(children: .combine)
     }

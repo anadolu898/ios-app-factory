@@ -6,7 +6,8 @@ struct AddDrinkSheet: View {
     let onAdd: (Int, String, String?) -> Void
 
     @State private var amountText: String = "250"
-    @State private var selectedBeverage: Beverage = .water
+    @State private var selectedProfile: NutrientDatabase.BeverageProfile = NutrientDatabase.beverages[0]
+    @State private var selectedCategory: NutrientDatabase.BeverageProfile.Category = .water
     @State private var note: String = ""
 
     private var amountValue: Int {
@@ -17,11 +18,22 @@ struct AddDrinkSheet: View {
         amountValue > 0 && amountValue <= 5000
     }
 
+    private var netHydration: NutrientDatabase.NetHydrationResult {
+        NutrientDatabase.netHydration(beverageId: selectedProfile.id, volumeML: amountValue)
+    }
+
+    private var quickAmounts: [Int] {
+        let bev = Beverage(rawValue: selectedProfile.id)
+        return bev?.quickAmounts ?? [150, 250, 350, 500]
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 amountSection
+                categorySection
                 beverageSection
+                hydrationInsightSection
                 noteSection
             }
             .navigationTitle(String(localized: "Add Drink"))
@@ -36,7 +48,7 @@ struct AddDrinkSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Add")) {
                         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
-                        onAdd(amountValue, selectedBeverage.rawValue, trimmedNote.isEmpty ? nil : trimmedNote)
+                        onAdd(amountValue, selectedProfile.id, trimmedNote.isEmpty ? nil : trimmedNote)
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -59,14 +71,13 @@ struct AddDrinkSheet: View {
                     .font(.title2.weight(.semibold))
                     .accessibilityLabel(String(localized: "Drink amount in milliliters"))
 
-                Text(String(localized: "ml"))
+                Text(String(localized: "mL"))
                     .foregroundStyle(.secondary)
                     .font(.title3)
             }
 
-            // Preset row
             HStack(spacing: 10) {
-                ForEach(selectedBeverage.quickAmounts, id: \.self) { amount in
+                ForEach(quickAmounts, id: \.self) { amount in
                     Button {
                         amountText = "\(amount)"
                     } label: {
@@ -94,44 +105,158 @@ struct AddDrinkSheet: View {
         }
     }
 
-    // MARK: - Beverage Section
+    // MARK: - Category Filter
+
+    private var categorySection: some View {
+        Section {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(NutrientDatabase.BeverageProfile.Category.allCases, id: \.rawValue) { cat in
+                        Button {
+                            selectedCategory = cat
+                            // Auto-select first in category
+                            if let first = NutrientDatabase.beverages(in: cat).first {
+                                selectedProfile = first
+                            }
+                        } label: {
+                            Text(categoryName(cat))
+                                .font(.caption.weight(.medium))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(selectedCategory == cat ? Color.accentColor : Color(.systemGray6))
+                                )
+                                .foregroundStyle(selectedCategory == cat ? .white : .primary)
+                        }
+                        .accessibilityAddTraits(selectedCategory == cat ? .isSelected : [])
+                    }
+                }
+            }
+        } header: {
+            Text(String(localized: "Category"))
+        }
+    }
+
+    // MARK: - Beverage Grid
 
     private var beverageSection: some View {
         Section {
+            let filtered = NutrientDatabase.beverages(in: selectedCategory)
             LazyVGrid(columns: [
-                GridItem(.adaptive(minimum: 70), spacing: 10)
+                GridItem(.adaptive(minimum: 80), spacing: 10)
             ], spacing: 10) {
-                ForEach(Beverage.allCases) { beverage in
+                ForEach(filtered, id: \.id) { profile in
                     Button {
-                        selectedBeverage = beverage
+                        selectedProfile = profile
                     } label: {
                         VStack(spacing: 4) {
-                            Image(systemName: beverage.icon)
+                            Image(systemName: profile.icon)
                                 .font(.title3)
-                            Text(beverage.displayName)
+                            Text(profile.displayName)
                                 .font(.caption2)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+
+                            if !profile.isFree && !StoreManager.shared.isPremium {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(
-                                    selectedBeverage == beverage
+                                    selectedProfile.id == profile.id
                                         ? Color.accentColor
                                         : Color(.systemGray6)
                                 )
                         )
                         .foregroundStyle(
-                            selectedBeverage == beverage ? .white : .primary
+                            selectedProfile.id == profile.id ? .white : .primary
                         )
                     }
-                    .accessibilityLabel(String(localized: "Beverage type: \(beverage.displayName)"))
-                    .accessibilityAddTraits(selectedBeverage == beverage ? .isSelected : [])
+                    .accessibilityLabel(String(localized: "\(profile.displayName)"))
+                    .accessibilityAddTraits(selectedProfile.id == profile.id ? .isSelected : [])
                 }
             }
         } header: {
             Text(String(localized: "Beverage"))
+        }
+    }
+
+    // MARK: - Hydration Insight (the smart part)
+
+    private var hydrationInsightSection: some View {
+        Section {
+            if amountValue > 0 {
+                // Net hydration
+                HStack {
+                    Image(systemName: "drop.fill")
+                        .foregroundStyle(.blue)
+                    Text(String(localized: "Net Hydration"))
+                        .font(.subheadline)
+                    Spacer()
+                    Text("\(netHydration.netML) mL")
+                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(netHydration.netML < amountValue ? .orange : .green)
+                }
+                .accessibilityElement(children: .combine)
+
+                if netHydration.waterDebt > 0 {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "Drink \(netHydration.waterDebt) mL extra water to compensate"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                // Factor breakdown
+                ForEach(netHydration.factors, id: \.self) { factor in
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                        Text(factor)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                // Caffeine info
+                if selectedProfile.caffeineMgPer250mL > 0 {
+                    let caffeine = selectedProfile.caffeineMgPer250mL * (Double(amountValue) / 250.0)
+                    HStack {
+                        Image(systemName: "mug.fill")
+                            .foregroundStyle(.brown)
+                        Text(String(localized: "Caffeine"))
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(Int(caffeine)) mg")
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                    }
+                }
+
+                // Calories
+                if selectedProfile.caloriesPer250mL > 0 {
+                    let calories = selectedProfile.caloriesPer250mL * (Double(amountValue) / 250.0)
+                    HStack {
+                        Image(systemName: "flame")
+                            .foregroundStyle(.red)
+                        Text(String(localized: "Calories"))
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(Int(calories)) kcal")
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                    }
+                }
+            }
+        } header: {
+            Text(String(localized: "Hydration Intelligence"))
         }
     }
 
@@ -144,6 +269,20 @@ struct AddDrinkSheet: View {
                 .accessibilityLabel(String(localized: "Add an optional note"))
         } header: {
             Text(String(localized: "Note"))
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func categoryName(_ cat: NutrientDatabase.BeverageProfile.Category) -> String {
+        switch cat {
+        case .water: String(localized: "Water")
+        case .hotDrink: String(localized: "Hot Drinks")
+        case .juice: String(localized: "Juice")
+        case .soda: String(localized: "Soda")
+        case .milk: String(localized: "Milk")
+        case .alcohol: String(localized: "Alcohol")
+        case .sports: String(localized: "Sports")
         }
     }
 }

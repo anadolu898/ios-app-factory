@@ -17,12 +17,55 @@ struct HealthTimelineView: View {
                 VStack(spacing: 24) {
                     scoreCard
                     streakCard
+                    quickLinksSection
                     timelineSection
                 }
                 .padding()
             }
             .navigationTitle(String(localized: "Health Timeline"))
             .onAppear { loadReport() }
+        }
+    }
+
+    // MARK: - Quick Links
+
+    private var quickLinksSection: some View {
+        HStack(spacing: 12) {
+            NavigationLink {
+                CaffeineChartView()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "mug.fill")
+                        .foregroundStyle(.brown)
+                    Text(String(localized: "Caffeine"))
+                        .font(.subheadline.weight(.medium))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.brown.opacity(0.1))
+                )
+                .foregroundStyle(.primary)
+            }
+
+            NavigationLink {
+                BodyReportView()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chart.bar.doc.horizontal")
+                        .foregroundStyle(.blue)
+                    Text(String(localized: "Report"))
+                        .font(.subheadline.weight(.medium))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.blue.opacity(0.1))
+                )
+                .foregroundStyle(.primary)
+            }
         }
     }
 

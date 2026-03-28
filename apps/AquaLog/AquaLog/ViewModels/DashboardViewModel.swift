@@ -24,6 +24,9 @@ final class DashboardViewModel {
     var currentClimate: HydrationCalculator.Climate = .temperate
     var weatherAdjustmentML: Int = 0
 
+    // Workout
+    var workoutAdvice: WorkoutDetector.WorkoutHydrationAdvice?
+
     var dailyGoal: Int {
         settings?.dailyGoalML ?? 2500
     }
@@ -62,6 +65,7 @@ final class DashboardViewModel {
         fetchSettings()
         updateStreak()
         syncHealthKit()
+        checkWorkouts()
     }
 
     // MARK: - Fetch
@@ -251,6 +255,14 @@ final class DashboardViewModel {
     func saveToHealthKit(amount: Int) {
         Task {
             _ = await HealthKitManager.shared.saveWaterIntake(milliliters: amount)
+        }
+    }
+
+    // MARK: - Workout Detection
+
+    private func checkWorkouts() {
+        Task {
+            workoutAdvice = await WorkoutDetector.shared.checkTodayWorkouts()
         }
     }
 

@@ -2,13 +2,13 @@
   "app_name": "AquaLog",
   "bundle_id": "com.anadolu898.aqualog",
   "category": "Health & Fitness",
-  "title": "AquaLog - Water Tracker",
-  "subtitle": "Hydration & Drink Reminder",
-  "keywords": "water,tracker,hydration,drink,reminder,daily,intake,goal,health,log,widget,habit,counter,record,fit",
-  "promotional_text": "Stay hydrated with the simplest water tracker. One-tap logging, beautiful widgets, and smart reminders. Start your free trial today.",
-  "whats_new": "Welcome to AquaLog! Start tracking your hydration today.\n\n- Beautiful progress ring dashboard\n- Quick-add buttons for instant logging\n- Home Screen and Lock Screen widgets\n- Weekly hydration charts\n- Apple Health integration\n- Smart drink reminders\n- Dark Mode support",
-  "support_url": "",
-  "privacy_url": "",
+  "title": "AquaLog: Smart Water Tracker",
+  "subtitle": "AI Hydration & Caffeine Tracker",
+  "keywords": "water,tracker,caffeine,hydration,drink,reminder,alcohol,health,smart,intake,goal,widget,apple watch,habit,free",
+  "promotional_text": "The intelligent hydration app. Track caffeine half-life, see alcohol's dehydration impact, unlock research-backed health milestones. Free core tracking, AI insights with Pro.",
+  "whats_new": "Introducing the Body Intelligence Engine.\n\n- Caffeine half-life tracker — see exactly when it leaves your system\n- Alcohol dehydration calculator — know how much extra water you need\n- Health Timeline — research-cited milestones at days 3, 7, 14, 30, 90\n- Smart notifications that adapt to your progress\n- Apple Watch app with complications\n- Siri Shortcuts — \"Hey Siri, I had a glass of wine\"\n- 23 beverages with full nutrition data\n- New pricing: $1.99/mo, $9.99/yr, or $19.99 lifetime",
+  "support_url": "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/terms-of-use.html",
+  "privacy_url": "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/privacy-policy.html",
   "price_tier": "0",
   "subscription_groups": [
     {
@@ -17,25 +17,32 @@
         {
           "id": "com.anadolu898.aqualog.premium.monthly",
           "name": "Monthly",
-          "price": 3.99,
+          "price": 1.99,
           "duration": "P1M",
           "trial": "P1W"
         },
         {
           "id": "com.anadolu898.aqualog.premium.yearly",
           "name": "Yearly",
-          "price": 29.99,
+          "price": 9.99,
           "duration": "P1Y",
           "trial": "P1W"
+        },
+        {
+          "id": "com.anadolu898.aqualog.premium.lifetime",
+          "name": "Lifetime",
+          "price": 19.99,
+          "duration": "lifetime",
+          "trial": null
         }
       ]
     }
   ],
   "localizations": {
     "en-US": {
-      "title": "AquaLog - Water Tracker",
-      "subtitle": "Hydration & Drink Reminder",
-      "keywords": "water,tracker,hydration,drink,reminder,daily,intake,goal,health,log,widget,habit,counter,record,fit"
+      "title": "AquaLog: Smart Water Tracker",
+      "subtitle": "AI Hydration & Caffeine Tracker",
+      "keywords": "water,tracker,caffeine,hydration,drink,reminder,alcohol,health,smart,intake,goal,widget,apple watch,habit,free"
     }
   },
   "revenuecat": {

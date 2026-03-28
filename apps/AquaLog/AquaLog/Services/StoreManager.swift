@@ -15,6 +15,7 @@ final class StoreManager {
 
     static let monthlyID = "com.anadolu898.aqualog.premium.monthly"
     static let yearlyID = "com.anadolu898.aqualog.premium.yearly"
+    static let lifetimeID = "com.anadolu898.aqualog.premium.lifetime"
 
     private let transactionListener: Task<Void, Error>
 
@@ -31,7 +32,8 @@ final class StoreManager {
         do {
             products = try await Product.products(for: [
                 Self.monthlyID,
-                Self.yearlyID
+                Self.yearlyID,
+                Self.lifetimeID
             ])
             products.sort { $0.price < $1.price }
         } catch {
@@ -118,6 +120,10 @@ final class StoreManager {
 
     var yearlyProduct: Product? {
         products.first { $0.id == Self.yearlyID }
+    }
+
+    var lifetimeProduct: Product? {
+        products.first { $0.id == Self.lifetimeID }
     }
 }
 
