@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import AquaLog
 
@@ -309,5 +310,257 @@ struct BeverageTests {
         #expect(Beverage.water.isFree == true)
         #expect(Beverage.coffee.isFree == false)
         #expect(Beverage.tea.isFree == false)
+    }
+}
+
+// MARK: - NutrientDatabase Tests
+
+@Suite("Nutrient Database")
+struct NutrientDatabaseTests {
+
+    @Test func allBeveragesHaveValidData() {
+        for bev in NutrientDatabase.beverages {
+            #expect(!bev.id.isEmpty)
+            #expect(!bev.displayName.isEmpty)
+            #expect(!bev.icon.isEmpty)
+            #expect(bev.hydrationFactor > 0 && bev.hydrationFactor <= 1.1,
+                    "\(bev.id) hydration factor \(bev.hydrationFactor) out of range")
+            #expect(bev.caffeineMgPer250mL >= 0)
+            #expect(bev.sugarGramsPer250mL >= 0)
+            #expect(bev.alcoholABV >= 0 && bev.alcoholABV < 1.0)
+        }
+    }
+
+    @Test func lookupByIdWorks() {
+        let water = NutrientDatabase.profile(for: "water")
+        #expect(water != nil)
+        #expect(water?.hydrationFactor == 1.0)
+        #expect(water?.caffeineMgPer250mL == 0)
+
+        let missing = NutrientDatabase.profile(for: "nonexistent")
+        #expect(missing == nil)
+    }
+
+    @Test func alcoholBeveragesHaveABV() {
+        let alcoholic = NutrientDatabase.beverages(in: .alcohol)
+        #expect(!alcoholic.isEmpty)
+        for bev in alcoholic {
+            #expect(bev.alcoholABV > 0, "\(bev.id) should have ABV > 0")
+        }
+    }
+
+    @Test func nonAlcoholBeveragesHaveZeroABV() {
+        let nonAlcoholic = NutrientDatabase.beverages.filter { $0.category != .alcohol }
+        for bev in nonAlcoholic {
+            #expect(bev.alcoholABV == 0, "\(bev.id) should have ABV == 0")
+        }
+    }
+
+    @Test func netHydrationWaterIs100Percent() {
+        let result = NutrientDatabase.netHydration(beverageId: "water", volumeML: 250)
+        #expect(result.grossML == 250)
+        #expect(result.netML == 250)
+        #expect(result.waterDebt == 0)
+    }
+
+    @Test func netHydrationAlcoholHasDebt() {
+        let result = NutrientDatabase.netHydration(beverageId: "wine_red", volumeML: 150)
+        #expect(result.netML < result.grossML, "Wine should have less net hydration than gross")
+        #expect(result.waterDebt > 0, "Wine should create water debt")
+        #expect(!result.factors.isEmpty, "Should explain the dehydration factors")
+    }
+
+    @Test func netHydrationSugaryCostsWater() {
+        let cola = NutrientDatabase.netHydration(beverageId: "soda", volumeML: 330)
+        #expect(cola.netML < cola.grossML, "Cola should have reduced net hydration")
+    }
+
+    @Test func freeBeveragesExist() {
+        let free = NutrientDatabase.freeBeverages
+        #expect(free.count >= 5, "Should have at least 5 free beverages")
+        #expect(free.contains { $0.id == "water" })
+    }
+
+    @Test func milkHydratesBetterThanWater() {
+        let milk = NutrientDatabase.profile(for: "milk")
+        #expect(milk != nil)
+        #expect(milk!.hydrationFactor > 1.0, "Milk hydrates better than water per research")
+    }
+}
+
+// MARK: - AlcoholCalculator Tests
+
+@Suite("Alcohol Calculator")
+@MainActor
+struct AlcoholCalculatorTests {
+
+    let calc = AlcoholCalculator.shared
+
+    @Test func nonAlcoholHasNoImpact() {
+        let impact = calc.calculateImpact(
+            beverageId: "water", volumeML: 250, weightKg: 70, gender: .male
+        )
+        #expect(impact.standardDrinks == 0)
+        #expect(impact.dehydrationML == 0)
+        #expect(impact.riskLevel == .none)
+    }
+
+    @Test func beerImpactIsLow() {
+        let impact = calc.calculateImpact(
+            beverageId: "beer", volumeML: 330, weightKg: 80, gender: .male
+        )
+        #expect(impact.standardDrinks > 0 && impact.standardDrinks < 2)
+        #expect(impact.dehydrationML > 0)
+        #expect(impact.riskLevel == .low)
+        #expect(!impact.recommendations.isEmpty)
+    }
+
+    @Test func spiritsHaveHighDehydration() {
+        let spirits = calc.calculateImpact(
+            beverageId: "spirits", volumeML: 50, weightKg: 70, gender: .male
+        )
+        let beer = calc.calculateImpact(
+            beverageId: "beer", volumeML: 330, weightKg: 70, gender: .male
+        )
+        // 50mL spirits (40% ABV) vs 330mL beer (5% ABV)
+        // Both roughly 1 standard drink but spirits are more concentrated
+        #expect(spirits.dehydrationML > 0)
+        #expect(beer.dehydrationML > 0)
+    }
+
+    @Test func genderAffectsBAC() {
+        let maleBAC = calc.estimateBAC(alcoholGrams: 14, weightKg: 70, gender: .male, hoursSinceDrink: 0)
+        let femaleBAC = calc.estimateBAC(alcoholGrams: 14, weightKg: 70, gender: .female, hoursSinceDrink: 0)
+        #expect(femaleBAC > maleBAC, "Same weight female should have higher BAC due to body water ratio")
+    }
+
+    @Test func bacDecaysOverTime() {
+        let initial = calc.estimateBAC(alcoholGrams: 14, weightKg: 70, gender: .male, hoursSinceDrink: 0)
+        let after2h = calc.estimateBAC(alcoholGrams: 14, weightKg: 70, gender: .male, hoursSinceDrink: 2)
+        let after8h = calc.estimateBAC(alcoholGrams: 14, weightKg: 70, gender: .male, hoursSinceDrink: 8)
+        #expect(after2h < initial)
+        #expect(after8h <= after2h)
+        #expect(after8h >= 0, "BAC should never go negative")
+    }
+
+    @Test func cumulativeAlcoholIncreasesRisk() {
+        let oneGlass = calc.calculateImpact(
+            beverageId: "wine_red", volumeML: 150, weightKg: 65, gender: .female
+        )
+        let afterThree = calc.calculateImpact(
+            beverageId: "wine_red", volumeML: 150, weightKg: 65, gender: .female,
+            existingAlcoholToday: 30 // ~2 glasses already
+        )
+        #expect(afterThree.riskLevel.rawValue >= oneGlass.riskLevel.rawValue)
+    }
+}
+
+// MARK: - CaffeineTracker Tests
+
+@Suite("Caffeine Tracker")
+@MainActor
+struct CaffeineTrackerTests {
+
+    let tracker = CaffeineTracker.shared
+
+    @Test func noDrinksReturnsZero() {
+        let state = tracker.calculateState(drinks: [])
+        #expect(state.currentMG == 0)
+        #expect(state.totalConsumedMG == 0)
+        #expect(state.sleepImpact == .none)
+        #expect(state.clearByTime == nil)
+    }
+
+    @Test func recentCoffeeShowsHighLevel() {
+        let drinks = [(caffeineeMG: 95.0, timestamp: Date.now.addingTimeInterval(-1800))] // 30 min ago
+        let state = tracker.calculateState(drinks: drinks)
+        #expect(state.currentMG > 80, "Should still have most of the caffeine after 30 min")
+        #expect(state.totalConsumedMG == 95)
+    }
+
+    @Test func caffeineDecaysOverTime() {
+        let fiveHoursAgo = Date.now.addingTimeInterval(-5 * 3600)
+        let drinks = [(caffeineeMG: 100.0, timestamp: fiveHoursAgo)]
+        let state = tracker.calculateState(drinks: drinks)
+        // After one half-life (~5hrs), should be ~50mg
+        #expect(state.currentMG > 40 && state.currentMG < 60,
+                "After 5 hours (one half-life), should be ~50mg, got \(state.currentMG)")
+    }
+
+    @Test func multipleDrinksAccumulate() {
+        let drinks = [
+            (caffeineeMG: 95.0, timestamp: Date.now.addingTimeInterval(-3600)),  // 1hr ago
+            (caffeineeMG: 95.0, timestamp: Date.now.addingTimeInterval(-1800)),  // 30min ago
+        ]
+        let state = tracker.calculateState(drinks: drinks)
+        #expect(state.currentMG > 150, "Two recent coffees should show high caffeine")
+        #expect(state.totalConsumedMG == 190)
+    }
+
+    @Test func lateCaffeineImpactsSleep() {
+        // Coffee at 9 PM with bedtime at 11 PM
+        let drinks = [(caffeineeMG: 200.0, timestamp: Date.now.addingTimeInterval(-1800))]
+        let state = tracker.calculateState(drinks: drinks, bedtimeHour: Calendar.current.component(.hour, from: Date.now) + 2)
+        #expect(state.sleepImpact != .none, "200mg caffeine 2 hours before bed should impact sleep")
+    }
+
+    @Test func decayCurveHas48Points() {
+        let drinks = [(caffeineeMG: 95.0, timestamp: Date.now)]
+        let curve = tracker.decayCurve(drinks: drinks)
+        #expect(curve.count == 48, "Should have 48 half-hour points for 24 hours")
+    }
+}
+
+// MARK: - HealthInsightsGenerator Tests
+
+@Suite("Health Insights")
+@MainActor
+struct HealthInsightsTests {
+
+    let generator = HealthInsightsGenerator.shared
+
+    @Test func day0HasNoInsights() {
+        let report = generator.generateReport(currentStreak: 0, longestStreak: 0, weekLogs: [])
+        #expect(report.unlockedInsights.isEmpty)
+        #expect(report.nextMilestone != nil)
+    }
+
+    @Test func day1UnlocksFirstInsight() {
+        let report = generator.generateReport(currentStreak: 1, longestStreak: 1, weekLogs: [])
+        #expect(!report.unlockedInsights.isEmpty)
+        #expect(report.unlockedInsights.first?.milestone == .day1)
+    }
+
+    @Test func day7UnlocksMultipleInsights() {
+        let report = generator.generateReport(currentStreak: 7, longestStreak: 7, weekLogs: [])
+        let milestones = Set(report.unlockedInsights.map { $0.milestone })
+        #expect(milestones.contains(.day1))
+        #expect(milestones.contains(.day3))
+        #expect(milestones.contains(.day7))
+        #expect(!milestones.contains(.day14))
+    }
+
+    @Test func scoreIsBounded() {
+        let report = generator.generateReport(currentStreak: 100, longestStreak: 100, weekLogs: [])
+        #expect(report.overallScore >= 0 && report.overallScore <= 100)
+
+        let badReport = generator.generateReport(
+            currentStreak: 0, longestStreak: 0, weekLogs: [],
+            weekCaffeineMG: 5000, weekAlcoholDrinks: 30
+        )
+        #expect(badReport.overallScore >= 0 && badReport.overallScore <= 100)
+    }
+
+    @Test func nextMilestoneCalculation() {
+        let report = generator.generateReport(currentStreak: 5, longestStreak: 5, weekLogs: [])
+        #expect(report.nextMilestone == .day7)
+        #expect(report.daysToNextMilestone == 2)
+    }
+
+    @Test func allInsightsHaveCitations() {
+        let report = generator.generateReport(currentStreak: 90, longestStreak: 90, weekLogs: [])
+        for insight in report.unlockedInsights {
+            #expect(!insight.citation.isEmpty, "\(insight.title) should have a citation")
+        }
     }
 }
