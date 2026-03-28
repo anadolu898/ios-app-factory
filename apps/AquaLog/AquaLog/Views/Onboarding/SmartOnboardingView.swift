@@ -20,7 +20,7 @@ struct SmartOnboardingView: View {
     @State private var remindersEnabled = true
     @State private var reminderInterval = 60
 
-    private let totalSteps = 6
+    private let totalSteps = 7
 
     var body: some View {
         ZStack {
@@ -46,6 +46,7 @@ struct SmartOnboardingView: View {
                     scheduleStep.tag(3)
                     resultStep.tag(4)
                     remindersStep.tag(5)
+                    quickLogTipStep.tag(6)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.3), value: step)
@@ -478,6 +479,91 @@ struct SmartOnboardingView: View {
             Spacer()
             Spacer()
         }
+    }
+
+    // MARK: - Step 6: Quick Log Tip
+
+    private var quickLogTipStep: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "hand.tap.fill")
+                .font(.system(size: 70))
+                .foregroundStyle(
+                    LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .symbolEffect(.bounce, options: .repeating.speed(0.5))
+
+            VStack(spacing: 12) {
+                Text(String(localized: "Log Without Opening the App"))
+                    .font(.title2.bold())
+                    .multilineTextAlignment(.center)
+
+                Text(String(localized: "We know it's hard to remember to log every drink. That's why we made it effortless."))
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+
+            VStack(spacing: 14) {
+                tipRow(
+                    icon: "widget.small.badge.plus",
+                    color: .blue,
+                    title: String(localized: "Home Screen Widget"),
+                    subtitle: String(localized: "Tap the + button right from your home screen — one tap, done")
+                )
+
+                tipRow(
+                    icon: "island.toprounding",
+                    color: .cyan,
+                    title: String(localized: "Dynamic Island"),
+                    subtitle: String(localized: "Your progress lives at the top of your screen all day")
+                )
+
+                tipRow(
+                    icon: "switch.2",
+                    color: .purple,
+                    title: String(localized: "Control Center"),
+                    subtitle: String(localized: "Swipe down, tap the water drop — logged in under 2 seconds")
+                )
+
+                tipRow(
+                    icon: "applewatch",
+                    color: .green,
+                    title: String(localized: "Apple Watch"),
+                    subtitle: String(localized: "Log from your wrist without reaching for your phone")
+                )
+            }
+            .padding(.horizontal, 24)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    private func tipRow(icon: String, color: Color, title: String, subtitle: String) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(color)
+                .frame(width: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(color.opacity(0.08))
+        )
     }
 
     // MARK: - Components
