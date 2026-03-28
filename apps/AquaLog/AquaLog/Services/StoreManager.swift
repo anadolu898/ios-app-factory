@@ -18,7 +18,8 @@ final class StoreManager {
     static let lifetimeID = "com.anadolu898.aqualog.premium.lifetime"
 
     // MARK: - RevenueCat API Key (set from App Store Connect)
-    static let revenueCatAPIKey = "appl_REPLACE_WITH_REAL_KEY"
+    // Note: This is the test store key. Replace with production key before App Store submission.
+    static let revenueCatAPIKey = "test_POltyIflbVGdOekYPBLJpizrfni"
 
     private init() {}
 
