@@ -8,7 +8,7 @@ struct ContentView: View {
         if hasCompletedOnboarding {
             MainTabView()
         } else {
-            OnboardingView()
+            SmartOnboardingView()
         }
     }
 }
