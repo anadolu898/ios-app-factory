@@ -84,7 +84,6 @@ node_modules/
 .windsurf/
 .zencoder/
 .claude/skills/
-skills/
 skills-lock.json
 
 # Secrets
