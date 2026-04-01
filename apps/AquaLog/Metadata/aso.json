@@ -1,6 +1,6 @@
 {
   "app_name": "AquaLog",
-  "bundle_id": "com.anadolu898.aqualog",
+  "bundle_id": "com.rightbehind.aqualog",
   "category": "Health & Fitness",
   "title": "AquaLog - Water Tracker",
   "subtitle": "Hydration & Drink Reminder",
@@ -16,21 +16,21 @@
       "name": "AquaLog Premium",
       "products": [
         {
-          "id": "com.anadolu898.aqualog.premium.monthly",
+          "id": "com.rightbehind.aqualog.premium.monthly",
           "name": "Monthly",
           "price": 3.99,
           "duration": "P1M",
           "trial": "P1W"
         },
         {
-          "id": "com.anadolu898.aqualog.premium.yearly",
+          "id": "com.rightbehind.aqualog.premium.yearly",
           "name": "Yearly",
           "price": 29.99,
           "duration": "P1Y",
           "trial": "P1W"
         },
         {
-          "id": "com.anadolu898.aqualog.premium.lifetime",
+          "id": "com.rightbehind.aqualog.premium.lifetime",
           "name": "Lifetime",
           "price": 49.99,
           "duration": "lifetime",

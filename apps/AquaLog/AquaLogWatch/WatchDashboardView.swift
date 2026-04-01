@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct WatchDashboardView: View {
-    @AppStorage("todayIntakeML", store: UserDefaults(suiteName: "group.com.anadolu898.aqualog"))
+    @AppStorage("todayIntakeML", store: UserDefaults(suiteName: "group.com.rightbehind.aqualog"))
     private var todayIntake: Int = 0
 
-    @AppStorage("dailyGoalML", store: UserDefaults(suiteName: "group.com.anadolu898.aqualog"))
+    @AppStorage("dailyGoalML", store: UserDefaults(suiteName: "group.com.rightbehind.aqualog"))
     private var dailyGoal: Int = 2500
 
     private var progress: Double {

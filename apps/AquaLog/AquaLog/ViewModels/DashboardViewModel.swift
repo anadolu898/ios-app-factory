@@ -184,7 +184,7 @@ final class DashboardViewModel {
     // MARK: - Widget Sync
 
     private func syncToWidgets() {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         defaults?.set(todayTotal, forKey: "todayIntakeML")
         defaults?.set(dailyGoal, forKey: "dailyGoalML")
         WidgetKit.WidgetCenter.shared.reloadAllTimelines()

@@ -12,7 +12,7 @@ struct LogWaterIntent: AppIntent {
     var amount: Int
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         defaults?.set(current + amount, forKey: "todayIntakeML")
 
@@ -31,7 +31,7 @@ struct LogCoffeeIntent: AppIntent {
     var amount: Int
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         defaults?.set(current + amount, forKey: "todayIntakeML")
 
@@ -51,7 +51,7 @@ struct LogWineIntent: AppIntent {
     var amount: Int
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
 
         let net = NutrientDatabase.netHydration(beverageId: "wine_red", volumeML: amount)
@@ -69,7 +69,7 @@ struct CheckHydrationIntent: AppIntent {
     static let openAppWhenRun = false
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         let goal = defaults?.integer(forKey: "dailyGoalML") ?? 2500
         let percent = goal > 0 ? Int(Double(current) / Double(goal) * 100) : 0

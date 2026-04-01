@@ -2,7 +2,7 @@
 # ============================================================
 # New App Scaffold — Creates a new iOS app project from template
 # Usage: ./scripts/new-app.sh <AppName> <BundleID> <Category>
-# Example: ./scripts/new-app.sh AquaLog com.anadolu898.aqualog "Health & Fitness"
+# Example: ./scripts/new-app.sh AquaLog com.rightbehind.aqualog "Health & Fitness"
 # ============================================================
 
 set -e

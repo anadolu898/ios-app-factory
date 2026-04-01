@@ -1,6 +1,6 @@
 name: AquaLog
 options:
-  bundleIdPrefix: com.anadolu898
+  bundleIdPrefix: com.rightbehind
   deploymentTarget:
     iOS: "18.0"
     watchOS: "11.0"
@@ -33,7 +33,7 @@ targets:
       - path: AquaLog/Preview Content
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog
+        PRODUCT_BUNDLE_IDENTIFIER: com.rightbehind.aqualog
         GENERATE_INFOPLIST_FILE: true
         INFOPLIST_KEY_CFBundleDisplayName: AquaLog
         INFOPLIST_KEY_UILaunchScreen_Generation: true
@@ -46,7 +46,7 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         DEVELOPMENT_ASSET_PATHS: '"AquaLog/Preview Content"'
         ENABLE_PREVIEWS: true
-        TARGETED_DEVICE_FAMILY: "1,2"
+        TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_KEY_NSHealthShareUsageDescription: "AquaLog reads your water intake and workout data to personalize hydration goals and suggest extra water after exercise."
         INFOPLIST_KEY_NSHealthUpdateUsageDescription: "AquaLog saves your water intake to Apple Health so all your health data stays in one place."
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "AquaLog checks your local weather to adjust your daily hydration goal for hot or humid conditions."
@@ -57,7 +57,7 @@ targets:
       properties:
         com.apple.developer.healthkit: true
         com.apple.security.application-groups:
-          - group.com.anadolu898.aqualog
+          - group.com.rightbehind.aqualog
     dependencies:
       - target: AquaLogWidgets
         embed: true
@@ -81,19 +81,19 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.rightbehind.aqualog.widgets
         GENERATE_INFOPLIST_FILE: false
         INFOPLIST_FILE: AquaLogWidgets/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: AquaLog Widgets
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_STYLE: Automatic
-        TARGETED_DEVICE_FAMILY: "1,2"
+        TARGETED_DEVICE_FAMILY: "1"
     entitlements:
       path: AquaLogWidgets/AquaLogWidgets.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.anadolu898.aqualog
+          - group.com.rightbehind.aqualog
 
   AquaLogWatch:
     type: application
@@ -104,9 +104,9 @@ targets:
           - WatchComplication.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.watch
+        PRODUCT_BUNDLE_IDENTIFIER: com.rightbehind.aqualog.watch
         GENERATE_INFOPLIST_FILE: true
-        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.anadolu898.aqualog
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.rightbehind.aqualog
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_STYLE: Automatic
@@ -115,7 +115,7 @@ targets:
       path: AquaLogWatch/AquaLogWatch.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.anadolu898.aqualog
+          - group.com.rightbehind.aqualog
 
   AquaLogWatchWidgets:
     type: app-extension
@@ -125,7 +125,7 @@ targets:
       - path: AquaLogWatch/WatchDashboardView.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.watch.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.rightbehind.aqualog.watch.widgets
         GENERATE_INFOPLIST_FILE: true
         INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
         MARKETING_VERSION: "1.0.0"
@@ -135,7 +135,7 @@ targets:
       path: AquaLogWatch/AquaLogWatch.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.anadolu898.aqualog
+          - group.com.rightbehind.aqualog
 
   AquaLogTests:
     type: bundle.unit-test
@@ -146,6 +146,6 @@ targets:
       - target: AquaLog
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.anadolu898.aqualog.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.rightbehind.aqualog.tests
         GENERATE_INFOPLIST_FILE: true
         CODE_SIGN_STYLE: Automatic

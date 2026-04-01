@@ -5,7 +5,7 @@ default_platform(:ios)
 
 # --- Customize these per app ---
 APP_NAME = "YourAppName"
-BUNDLE_ID = "com.anadolu898.yourapp"
+BUNDLE_ID = "com.rightbehind.yourapp"
 TEAM_ID = "YOUR_TEAM_ID"          # Apple Developer Team ID
 ITC_TEAM_ID = "YOUR_ITC_TEAM_ID"  # App Store Connect Team ID
 # --------------------------------

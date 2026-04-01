@@ -83,11 +83,22 @@ claude mcp add-json reddit '{"command":"npx","args":["-y","reddit-mcp-buddy"]}'
 # Firebase — /plugin install firebase
 # Sentry — /plugin install sentry
 
-# === LAYER 7: Skills (Install via Claude Code) ===
-# ASO Skills: github.com/Eronred/aso-skills
-# SwiftUI Expert: from awesome-agent-skills
-# Frontend Design: /plugin install frontend-design
-# App Store Screenshots: github.com/ParthJadhav/app-store-screenshots
+# === LAYER 7: Skills (Installed in .agents/skills/) ===
+# SwiftUI Skills (auto-invoked during development):
+#   swiftui-pro       — Core rules: state, nav, data, perf, a11y (Paul Hudson methodology)
+#   swiftui-expert    — Advanced: animations, Charts, Widgets, Intents, SwiftData (AvdLee methodology)
+#   swiftui-patterns  — Architecture: MVVM, composition, refactoring (Dimillian methodology)
+#   design-check      — Visual & accessibility audit via screenshots + UI snapshots
+# ASO Skills (30 marketing/optimization skills in .agents/skills/):
+#   aso-audit, keyword-research, metadata-optimization, competitor-analysis, etc.
+#
+# Design Infrastructure (in .claude/):
+#   rules/design-system.md       — Color, typography, spacing, component standards
+#   rules/swiftui-conventions.md — File organization, naming, import order
+#   commands/design-check.md     — /project:design-check slash command
+#   commands/quality-gate.md     — /project:quality-gate slash command
+#   agents/ui-reviewer.md        — Visual quality review subagent
+#   agents/accessibility-auditor.md — WCAG 2.1 AA compliance subagent
 ```
 
 ### Context Budget Management
@@ -97,6 +108,53 @@ Each active MCP server consumes context tokens. With Anthropic's Tool Search (la
 - **Always active**: GitHub, Context7, XcodeBuildMCP, Appeeky
 - **Activate per-phase**: Xcode MCP (build phase), RevenueCat (monetization phase), Postiz/Twitter (marketing phase)
 - **Use McPick** (`npx mcpick`) to toggle servers on/off between phases
+
+---
+
+## 2b. Design & Quality Toolkit
+
+### Autonomous Visual Feedback Loop
+
+The key to production-grade UI without human review is a **screenshot → evaluate → iterate** cycle. Claude builds the view, screenshots it via XcodeBuildMCP, evaluates against the design system rules, fixes issues, and re-screenshots — all autonomously.
+
+**Tools in the loop:**
+- `build_run_sim` — compile and launch
+- `screenshot` — capture current screen state
+- `snapshot_ui` — get accessibility tree with element coordinates
+- `.claude/rules/design-system.md` — evaluation criteria
+- `swiftui-pro` / `swiftui-expert` skills — code fix guidance
+
+### Skills Architecture
+
+Skills are stored in `.agents/skills/` and symlinked to `.claude/skills/`. They auto-invoke based on task context.
+
+| Skill | Triggers On | Purpose |
+|-------|-------------|---------|
+| `swiftui-pro` | Any SwiftUI code writing | Prevents deprecated APIs, enforces @Observable, accessibility |
+| `swiftui-expert` | Animations, Charts, Widgets, SwiftData | Advanced framework integration patterns |
+| `swiftui-patterns` | Refactoring, architecture decisions | MVVM, view composition, performance audit |
+| `design-check` | "design check", Phase 3 QG, after major UI changes | Structured visual + accessibility audit |
+| 30 ASO/marketing skills | Various marketing tasks | ASO, keywords, reviews, campaigns, etc. |
+
+### Slash Commands
+
+- `/project:design-check` — Screenshot every screen, audit visual quality + accessibility, output structured report
+- `/project:quality-gate` — Full pre-submission checklist (build + test + design + performance + paywall + dark mode + a11y)
+
+### Specialized Agents
+
+- **UI Reviewer** (`.claude/agents/ui-reviewer.md`) — Scores visual quality, usability, and polish on a 1-5 scale per screen
+- **Accessibility Auditor** (`.claude/agents/accessibility-auditor.md`) — WCAG 2.1 AA compliance check with per-screen results
+
+### Active MCP Stack for Design & Quality
+
+- **Xcode MCP** (`xcrun mcpbridge`) — SwiftUI preview rendering, Apple docs search, code snippets (Xcode 26.3)
+- **iOS Simulator MCP** — Granular UI interaction: tap coordinates, swipe gestures, text input, video recording
+- **XcodeBuildMCP** — Build, test, screenshot, UI snapshot, LLDB debug
+
+### Future Additions (When Needed)
+
+- **Motion AI Kit** — Animation performance auditing (if we add complex animations)
 
 ---
 

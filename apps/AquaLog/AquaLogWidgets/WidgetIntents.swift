@@ -17,7 +17,7 @@ struct QuickAddWaterIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         defaults?.set(current + amount, forKey: "todayIntakeML")
 
@@ -36,7 +36,7 @@ struct LogWaterControlIntent: AppIntent {
     static let openAppWhenRun = false
 
     func perform() async throws -> some IntentResult {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         defaults?.set(current + 250, forKey: "todayIntakeML")
         WidgetCenter.shared.reloadAllTimelines()

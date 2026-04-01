@@ -21,7 +21,7 @@ struct AquaLogControlWidget: ControlWidget {
     }
 
     private func currentProgressText() -> String {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let current = defaults?.integer(forKey: "todayIntakeML") ?? 0
         let goal = defaults?.integer(forKey: "dailyGoalML") ?? 2500
         let percent = goal > 0 ? Int(Double(current) / Double(goal) * 100) : 0

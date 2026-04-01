@@ -43,7 +43,7 @@ struct HydrationTimelineProvider: TimelineProvider {
     }
 
     private func loadCurrentEntry() -> HydrationEntry {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let currentML = defaults?.integer(forKey: "todayIntakeML") ?? 0
         let goalML = defaults?.integer(forKey: "dailyGoalML") ?? 2500
         return HydrationEntry(date: .now, currentML: currentML, goalML: goalML)

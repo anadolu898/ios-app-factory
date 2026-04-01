@@ -1,7 +1,7 @@
 # AquaLog — App Specification & Research
 
 **Category**: Health & Fitness
-**Bundle ID**: com.anadolu898.aqualog
+**Bundle ID**: com.rightbehind.aqualog
 **Status**: Development (awaiting Apple Developer account recovery)
 **Created**: 2026-03-28
 **Phase**: 2 complete, awaiting Phase 4 (submission)
@@ -158,7 +158,7 @@ Stay hydrated with the simplest water tracker. One-tap logging, beautiful widget
 - **Entitlement**: `premium` (entla7bdce6b82)
 - **Products**: Monthly (prod0ced7dea21), Yearly (prod88e7ecc3da)
 - **Offering**: `default` (ofrng9217191b69) with monthly, yearly, lifetime packages
-- **Note**: When Apple Developer account is connected, swap generic store identifiers to `com.anadolu898.aqualog.premium.monthly` / `.yearly`
+- **Note**: When Apple Developer account is connected, swap generic store identifiers to `com.rightbehind.aqualog.premium.monthly` / `.yearly`
 
 ---
 

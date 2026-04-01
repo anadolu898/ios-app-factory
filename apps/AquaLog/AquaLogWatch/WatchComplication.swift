@@ -47,7 +47,7 @@ struct WatchTimelineProvider: TimelineProvider {
     }
 
     private func currentEntry() -> WatchTimelineEntry {
-        let defaults = UserDefaults(suiteName: "group.com.anadolu898.aqualog")
+        let defaults = UserDefaults(suiteName: "group.com.rightbehind.aqualog")
         let intake = defaults?.integer(forKey: "todayIntakeML") ?? 0
         let goal = defaults?.integer(forKey: "dailyGoalML") ?? 2500
         return WatchTimelineEntry(date: .now, intakeML: intake, goalML: goal)

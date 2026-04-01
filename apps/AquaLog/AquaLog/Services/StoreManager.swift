@@ -13,9 +13,9 @@ final class StoreManager {
         customerInfo?.entitlements["premium"]?.isActive ?? false
     }
 
-    static let monthlyID = "com.anadolu898.aqualog.premium.monthly"
-    static let yearlyID = "com.anadolu898.aqualog.premium.yearly"
-    static let lifetimeID = "com.anadolu898.aqualog.premium.lifetime"
+    static let monthlyID = "com.rightbehind.aqualog.premium.monthly"
+    static let yearlyID = "com.rightbehind.aqualog.premium.yearly"
+    static let lifetimeID = "com.rightbehind.aqualog.premium.lifetime"
 
     // MARK: - RevenueCat API Key (set from App Store Connect)
     // Note: This is the test store key. Replace with production key before App Store submission.
