@@ -47,6 +47,7 @@ struct AlcoholImpactView: View {
                         emptyState
                     }
                     infoSection
+                    disclaimerSection
                 }
                 .padding()
             }
@@ -224,6 +225,25 @@ struct AlcoholImpactView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 30)
+    }
+
+    // MARK: - Disclaimer
+
+    private var disclaimerSection: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(.subheadline)
+            Text(String(localized: "For informational purposes only. These estimates are not a substitute for a breathalyzer or medical advice. Do not use this information to make decisions about driving, operating machinery, or any safety-critical activity."))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.orange.opacity(0.08))
+        )
     }
 
     // MARK: - Info Section

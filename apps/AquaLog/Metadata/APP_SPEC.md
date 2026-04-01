@@ -115,7 +115,7 @@ Unlock the full experience with AquaLog Pro:
 - Data export
 - Smart reminders
 
-Start with a 7-day free trial. Monthly ($3.99/month) or yearly ($29.99/year — save 37%).
+Start with a 7-day free trial. Monthly ($3.99/month), yearly ($29.99/year — save 37%), or lifetime ($49.99 — yours forever).
 
 Built with privacy in mind. Your data stays on your device and in Apple Health. No accounts required. No ads. Ever.
 ```
@@ -147,6 +147,7 @@ Stay hydrated with the simplest water tracker. One-tap logging, beautiful widget
 | Free | $0 | — |
 | Monthly | $3.99/mo | 7-day free trial |
 | Yearly | $29.99/yr | 7-day free trial |
+| Lifetime | $49.99 | — |
 
 **Free tier includes**: Basic water tracking, 1 widget (small), daily goal
 

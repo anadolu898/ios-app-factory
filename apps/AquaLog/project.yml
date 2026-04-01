@@ -56,8 +56,6 @@ targets:
       path: AquaLog/AquaLog.entitlements
       properties:
         com.apple.developer.healthkit: true
-        com.apple.developer.healthkit.access:
-          - health-records
         com.apple.security.application-groups:
           - group.com.anadolu898.aqualog
     dependencies:

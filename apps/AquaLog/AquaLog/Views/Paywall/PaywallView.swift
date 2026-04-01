@@ -132,7 +132,7 @@ struct PaywallView: View {
                                 .foregroundStyle(.white)
                                 .clipShape(Capsule())
                         } else if productID == StoreManager.yearlyID {
-                            Text(String(localized: "Save 58%"))
+                            Text(String(localized: "Save 37%"))
                                 .font(.caption2.weight(.bold))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
@@ -215,10 +215,17 @@ struct PaywallView: View {
             }
             .font(.caption)
 
-            Text(String(localized: "Payment will be charged to your Apple ID account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period."))
+            Text(String(localized: "Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. You can manage and cancel subscriptions in your device Settings > Apple ID > Subscriptions."))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
+
+            HStack(spacing: 16) {
+                Link(String(localized: "Privacy Policy"), destination: URL(string: "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/privacy-policy.html")!)
+                Link(String(localized: "Terms of Use"), destination: URL(string: "https://anadolu898.github.io/ios-app-factory/apps/AquaLog/Metadata/terms-of-use.html")!)
+            }
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
         }
         .padding(.bottom, 20)
     }

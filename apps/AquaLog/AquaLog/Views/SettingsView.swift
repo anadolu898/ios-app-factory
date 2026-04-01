@@ -169,6 +169,13 @@ struct SettingsView: View {
                 Task { await StoreManager.shared.restorePurchases() }
             }
             .accessibilityLabel(String(localized: "Restore previous purchases"))
+
+            if StoreManager.shared.isPremium {
+                Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
+                    Label(String(localized: "Manage Subscription"), systemImage: "gear")
+                }
+                .accessibilityLabel(String(localized: "Manage your subscription in Settings"))
+            }
         } header: {
             Text(String(localized: "Premium"))
         }
