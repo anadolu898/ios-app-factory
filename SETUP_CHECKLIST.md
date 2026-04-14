@@ -1,6 +1,6 @@
 # Infrastructure Setup Checklist
 
-Status: **In Progress** | Last updated: 2026-03-28
+Status: **In Progress** | Last updated: 2026-04-14
 
 ---
 
@@ -38,34 +38,21 @@ Status: **In Progress** | Last updated: 2026-03-28
 
 ### Priority 2: Required Before First App Submission
 
-- [ ] **App Store Connect API Key**
-  1. Go to https://appstoreconnect.apple.com/access/integrations/api
-  2. Click "Generate API Key" (role: Admin or App Manager)
-  3. Save the `.p8` file somewhere safe (e.g., `~/.appstoreconnect/AuthKey_XXXXX.p8`)
-  4. Note the Key ID and Issuer ID
-  5. Add to `.env`:
-     ```
-     ASC_KEY_ID=your_key_id
-     ASC_ISSUER_ID=your_issuer_id
-     ASC_P8_PATH=/path/to/AuthKey.p8
-     ```
-  6. Run `./scripts/setup-mcps.sh`
+- [x] **App Store Connect API Key** — Completed 2026-04-12
+  - API key and In-App Purchase key both configured
+  - P8 file stored locally (not in repo)
+  - Credentials in `.env` (gitignored)
 
-- [ ] **RevenueCat Account + API Key**
-  1. Sign up at https://app.revenuecat.com
-  2. Create a project
-  3. Go to Settings > API Keys > Generate new secret key
-  4. Add to `.env`:
-     ```
-     REVENUECAT_API_KEY=sk_xxxxxxxxxxxxx
-     ```
-  5. Run `./scripts/setup-mcps.sh`
+- [x] **RevenueCat Account + API Key** — Completed 2026-04-12
+  - Project: `ios-app-factory` on RevenueCat
+  - Public and secret keys configured in `.env` (gitignored)
+  - Products: Monthly, Yearly, Lifetime subscriptions
+  - Entitlement: `premium` — Offering: `default`
 
 ### Priority 3: Required Before Marketing Phase
 
-- [ ] **Appeeky API Key** (already purchased, waiting on key to appear)
-  - Contact @appeeky on X if key doesn't show up
-  - Once received, add to `.env` and run `./scripts/setup-mcps.sh`
+- [x] **Appeeky API Key** — Completed 2026-04-12
+  - API key configured in `.env` (gitignored)
 
 - [ ] **Apple Search Ads Account**
   1. Go to https://searchads.apple.com
