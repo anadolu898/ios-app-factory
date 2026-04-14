@@ -27,6 +27,12 @@
 
 5. **AngularGradient on progress ring** — Looked wrong at small fill percentages (<15%). Switched to LinearGradient. **LESSON:** Always test visual components at extreme values (0%, 5%, 50%, 100%).
 
+6. **Cosmetic-only premium gating** — Lock icons on premium beverages were purely decorative. Users could tap, select, and add premium items without paying. **LESSON:** Never rely on UI indicators as the only feature gate. Always intercept the action AND present the paywall. Defense-in-depth: gate at selection, gate at submission, disable as safety net.
+
+7. **Build number not incremented before TestFlight** — `CURRENT_PROJECT_VERSION` was still `1` in pbxproj while Build 6 was already uploaded. ITMS-90189 rejection. **LESSON:** Always `agvtool new-version -all N` before archiving. Add to TestFlight checklist.
+
+8. **Category auto-select landing on locked items** — Switching beverage categories auto-selected the first item, which could be premium. Free users saw a disabled Add button with no explanation. **LESSON:** Auto-select the first *accessible* item (free for non-premium, any for premium).
+
 6. **Worktree CWD sticky** — If the worktree directory gets deleted while the shell CWD is inside it, every subsequent Bash command fails with "Path does not exist". **LESSON:** Always `cd` out of a worktree before deleting it. Or use `git -C` for all commands.
 
 ### What Should Be Automated Next

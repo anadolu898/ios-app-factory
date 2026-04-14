@@ -1,328 +1,634 @@
-# Compound Engineering Report: AquaLog Code Review
-> Date: 2026-04-05 | App: AquaLog (iOS hydration tracker) | Stack: SwiftUI, SwiftData, HealthKit, RevenueCat, WidgetKit, WatchKit
+# AquaLog — Build Report
+## Development Progress, Decisions, and Compound Fixes (March 28 – April 14, 2026)
+
+This document captures the full development history of AquaLog: every architectural decision, every code review finding, and the recurring patterns that emerged across 8 phases. The goal is to make every future app build faster and cleaner by front-loading these lessons.
 
 ---
 
-## Executive Summary
+## App Overview
 
-An 8-agent code review of AquaLog's first commit uncovered **21 issues** (12 P1 ship-blocking, 7 P2, 2 P3) across 20 files. The bugs clustered into 6 recurring patterns that are **not specific to hydration tracking** — they will reappear in every iOS app we ship unless we build systematic defenses.
+**AquaLog** is an iOS hydration tracker targeting users frustrated with overengineered, gamified competitors (Waterllama — 148K reviews, $183K/day; WaterMinder — 32K reviews, $40K/day).
 
-This report distills those patterns into reusable lessons, checklists, and architectural rules for the portfolio.
+**Positioning:** Clean, simple water tracker that just works — science-backed hydration intelligence without the noise  
+**Free tier:** Basic water tracking, 1 widget (small), daily goal, 6 free beverages  
+**Premium tier:** 23+ beverages with full nutrition data, caffeine tracker, alcohol calculator, health timeline, weekly body report, CSV export  
+**Bundle ID:** `com.rightbehind.aqualog`
+
+**Tech stack:** SwiftUI + SwiftData + HealthKit + StoreKit 2 + RevenueCat + WidgetKit + WatchKit + ActivityKit + AppIntents + Sentry
+
+**Pricing:**
+- Monthly: $3.99/month (7-day free trial)
+- Yearly: $29.99/year (7-day free trial)
+- Lifetime: $49.99
 
 ---
 
-## The 6 Patterns That Will Repeat
+## Phase Timing (Actual)
+
+| Phase | Description | Status | Planned | Actual |
+|-------|-------------|--------|---------|--------|
+| Phase 0 | Market research (Appeeky + competitor analysis) | ✅ Complete | 2 hrs | 30 min |
+| Phase 1 | Core MVP (SwiftData models + dashboard + logging) | ✅ Complete | 4 hrs | 2 hrs |
+| Phase 2 | Intelligence engine (5 services: nutrients, caffeine, alcohol, hydration calc, insights) | ✅ Complete | 4 hrs | 3 hrs |
+| Phase 3 | Multi-surface (widgets, Watch, AppIntents, Live Activity, Control Center) | ✅ Complete | 3 hrs | 2 hrs |
+| Phase 4 | Onboarding + paywall + monetization | ✅ Complete | 2 hrs | 1.5 hrs |
+| Phase 5 | 8-agent code review + bug fixes (21 issues found, 12 fixed) | ✅ Complete | — | 4 hrs |
+| Phase 6 | QA testing session (10 bugs fixed) + TestFlight validation | ✅ Complete | 2 hrs | 3 hrs |
+| Phase 7 | Premium gating fix + juice options + build bump | ✅ Complete | — | 1 hr |
+| Phase 8 | App Store submission + ASO + launch | 🚧 Pending | 2 hrs | — |
+| **Total** | | | **19 hrs** | **17 hrs** |
+
+**Total code review findings:** 21 (12 P1 critical, 7 P2 important, 2 P3 polish)  
+**Total QA bugs fixed:** 10  
+**Total commits:** 15  
+**Total PRs:** 6
+
+---
+
+## Architecture Decisions (What to Reuse)
+
+### 1. Data Layer: SwiftData + App Group Container
+
+**Pattern:** SwiftData `ModelContainer` in the App Group container as single source of truth. All surfaces (main app, widgets, Siri, Watch, Control Center) share the same container.
+
+| Data | Storage | Rationale |
+|------|---------|-----------|
+| Water log entries | SwiftData (`WaterLog`) | Queryable, relational, sortable |
+| User settings & goals | SwiftData (`UserSettings`) | Profile data with complex types |
+| Premium status | RevenueCat (authoritative) + UserDefaults (cache) | Server-side truth, offline fallback |
+| Widget hot state | App Group UserDefaults | Instant read in widget timeline providers |
+
+**Key rule:** SwiftData is the record of truth. UserDefaults is a hot-path cache. Never store authorization state (premium) only in local storage — jailbroken devices can flip SQLite fields. RevenueCat entitlement is the source of truth; UserDefaults is a cache for offline grace.
+
+### 2. Beverage Database: Start with Full Data Model
+
+**Lesson learned the hard way.** Started with a simple `Beverage` enum (8 cases), then needed a comprehensive `NutrientDatabase` with 23+ beverages including caffeine, sugar, alcohol, hydration factors, and calorie data. Had to build a `displayInfo(for:)` bridge between the two.
+
+**Rule:** Start with the data model you'll need at scale. If you know you'll have 20+ items with rich metadata, don't start with an enum — start with a struct database.
+
+**Final pattern:**
+```swift
+struct NutrientDatabase {
+    struct BeverageProfile {
+        let id: String
+        let category: Category
+        let displayName: String
+        let icon: String
+        let caffeineMgPer250mL: Double
+        let sugarGramsPer250mL: Double
+        let alcoholABV: Double
+        let hydrationFactor: Double
+        let caloriesPer250mL: Double
+        let isFree: Bool
+    }
+    
+    static let beverages: [BeverageProfile] = [...]
+    private static let beveragesByID: [String: BeverageProfile] = // O(1) lookup
+}
+```
+
+### 3. AppIntents as Universal Foundation
+
+Build AppIntents first — they power widgets, Control Center, Siri, Shortcuts, and Action Button for free. One `LogDrinkIntent` drives all surfaces. Same lesson confirmed in FastTrack.
+
+### 4. Net Hydration Intelligence
+
+The key differentiator. Every beverage's hydration impact is calculated factoring in:
+- **Base hydration factor** (milk = 1.04, water = 1.0, espresso = 0.75, spirits = 0.10)
+- **Sugar processing cost** (~1 mL water per gram of sugar metabolized)
+- **Alcohol dehydration** (each gram of ethanol causes ~10 mL extra fluid loss)
+- **Caffeine diuretic effect** (mild, only significant above ~300mg/day)
+
+This calculation runs in `NutrientDatabase.netHydration()` and feeds the AddDrinkSheet's "Hydration Intelligence" section — showing users the real impact of their drinks.
+
+### 5. Premium Feature Gating: Defense in Depth
+
+After discovering that premium beverages could be added without paying (lock icon was purely cosmetic), we implemented three layers:
+
+```
+Layer 1: Beverage grid tap → showPaywall (intercept at selection)
+Layer 2: "Add" button → "Unlock" button (intercept at submission)  
+Layer 3: isValid guard → disabled state (safety net)
+```
+
+**Pattern (reusable):**
+```swift
+// In beverage grid
+Button {
+    if !profile.isFree && !StoreManager.shared.isPremium {
+        showPaywall = true  // Layer 1: intercept
+    } else {
+        selectedProfile = profile
+    }
+}
+
+// In toolbar
+Button(needsPremium ? String(localized: "Unlock") : String(localized: "Add")) {
+    if needsPremium {
+        showPaywall = true  // Layer 2: redirect
+    } else {
+        onAdd(amountValue, selectedProfile.id, note)
+        dismiss()
+    }
+}
+.disabled(!isValidAmount)  // Layer 3: safety net
+```
+
+**Rule for future apps:** Never rely on cosmetic indicators (lock icons, grayed-out text) as the only premium gate. Always block the action. Show the paywall on tap — every locked interaction is a conversion opportunity.
+
+### 6. Smart Category Auto-Select
+
+When switching beverage categories, auto-select the first *accessible* item (free for non-premium users):
+
+```swift
+let inCategory = NutrientDatabase.beverages(in: cat)
+if let first = inCategory.first(where: { $0.isFree || StoreManager.shared.isPremium })
+    ?? inCategory.first {
+    selectedProfile = first
+}
+```
+
+Without this, switching to "Soda" or "Alcohol" category silently lands on a locked beverage with the Add button disabled and no explanation.
+
+### 7. `@Observable` + Stored Properties for UI State
+
+All view models use `@Observable` macro (iOS 17+). Computed properties 2+ levels deep break SwiftUI reactivity. Always use stored properties updated explicitly.
+
+```swift
+@Observable
+final class DashboardViewModel {
+    var todayEntries: [WaterLog] = []     // ✅ stored
+    var totalIntake: Int = 0               // ✅ stored — recomputed explicitly
+    var progress: Double = 0.0             // ✅ stored
+    
+    func recalculate() {
+        totalIntake = todayEntries.reduce(0) { $0 + $1.amount }
+        progress = Double(totalIntake) / Double(dailyGoal)
+    }
+}
+```
+
+### 8. Navigation: Per-Tab NavigationStack
+
+Tab-based apps: each tab owns its own `NavigationStack`. No global `AppRouter`. Deep links set `selectedTab` and push onto the relevant path. (Same decision as FastTrack — confirmed as the right pattern for tab apps.)
+
+---
+
+## The 6 Critical Bug Patterns (from 8-Agent Code Review)
+
+These patterns are **not specific to hydration tracking** — they will reappear in every iOS app. Full details in `docs/COMPOUND_REPORT.md`.
 
 ### Pattern 1: Multi-Surface Data Loss
 
-**What happened:** AppIntents (Siri, Shortcuts), widgets, and Watch app all logged drinks to `UserDefaults` only. SwiftData was never written. This meant history was invisible, streaks didn't update, and HealthKit diverged from the app — while the user saw a success dialog.
+**What happened:** Widgets, Watch, and AppIntents only wrote to UserDefaults, bypassing SwiftData. History was invisible, streaks didn't update, HealthKit diverged.
 
-**Why it's systemic:** Every app we ship will have multiple entry points (widgets, Siri, Watch, Control Center, NFC). Each entry point runs in a separate process. If persistence logic lives only in the main app's ViewModel, every other surface silently drops data.
-
-**Rule for future apps:**
-```
-RULE: One canonical "write" function, shared across all surfaces.
-      Every entry point (main app, widget, Siri, Watch) calls the same
-      persistence code. If SwiftData, the shared ModelContainer must
-      live in the App Group container.
-```
-
-**Checklist before shipping any multi-surface feature:**
-- [ ] Widget intent writes to SwiftData (not just UserDefaults)
-- [ ] Watch action writes to SwiftData or syncs via WatchConnectivity
-- [ ] AppIntent writes to SwiftData
-- [ ] HealthKit is updated from every surface
-- [ ] WidgetCenter.shared.reloadAllTimelines() called after every write
-- [ ] Integration test: log from widget, verify in main app history
-
----
+**Rule:** One canonical write function (e.g., `LogDrinkService`), shared across all surfaces. Every entry point calls the same persistence code through the App Group container.
 
 ### Pattern 2: Optimistic UI with Silent Failures
 
-**What happened:** `addDrink` played a haptic, updated the UI, fired confetti — then `try context.save()` failed silently in a `catch {}` block. The user believed the drink was logged. On relaunch, it was gone.
+**What happened:** `addDrink` played haptic, updated UI, fired confetti — then `try context.save()` failed silently in a `catch {}` block.
 
-**Why it's systemic:** SwiftUI makes it easy to update `@Observable` state before persistence confirms. Developers naturally write the "happy path" first and add error handling later — except "later" never comes.
-
-**Rule for future apps:**
-```
-RULE: Never confirm success (haptic, animation, UI update) until
-      persistence succeeds. If the save fails, revert the UI state
-      and show an error alert.
-```
-
-**Implementation pattern:**
-```swift
-func addItem() {
-    let item = Item(...)
-    context.insert(item)
-    do {
-        try context.save()
-        // ONLY now: haptic + animation + UI update
-        items.append(item)
-        hapticTrigger += 1
-    } catch {
-        context.delete(item)  // revert
-        saveError = error.localizedDescription
-    }
-}
-```
-
----
+**Rule:** Never confirm success (haptic, animation, UI update) until persistence succeeds. Revert UI on error.
 
 ### Pattern 3: Hardcoded Secrets in Source
 
-**What happened:** Sentry DSN and RevenueCat test API key were string literals in Swift files. The DSN is visible in the binary (allows quota exhaustion). The test key means all production StoreKit purchases fail.
+**What happened:** Sentry DSN and RevenueCat test API key were string literals in Swift files.
 
-**Why it's systemic:** During rapid prototyping, keys get pasted into code. Without a compile-time gate, they ship to production. Every app has at least 2-3 service keys (analytics, crash reporting, monetization).
-
-**Rule for future apps:**
-```
-RULE: All API keys and DSNs go in Info.plist via xcconfig files.
-      Use #if DEBUG / #else for test vs production keys.
-      CI must fail if a known test key pattern is found in source.
-```
-
-**Xcconfig pattern:**
-```
-// Debug.xcconfig
-SENTRY_DSN = https://test@sentry.io/123
-REVENUECAT_KEY = test_xxx
-
-// Release.xcconfig
-SENTRY_DSN = https://prod@sentry.io/123
-REVENUECAT_KEY = appl_xxx
-```
-
-**Read in code:**
-```swift
-let dsn = Bundle.main.infoDictionary?["SENTRY_DSN"] as? String ?? ""
-```
-
----
+**Rule:** All API keys in Info.plist via xcconfig. `#if DEBUG / #else` for test vs production. CI must fail if test key patterns are found in source.
 
 ### Pattern 4: The `fatalError` Landmine
 
-**What happened:** `ModelContainer` initialization used `fatalError` on failure. A schema migration error (inevitable as models evolve) would permanently crash the app on launch — requiring a full reinstall and losing all user data.
+**What happened:** `ModelContainer` init used `fatalError`. A schema migration error would permanently crash the app, requiring reinstall and losing all data.
 
-**Why it's systemic:** `fatalError` feels safe during development because the failure "can't happen." But schema migrations, disk corruption, and keychain resets make it a certainty over time. Health/fitness apps are especially vulnerable because users accumulate months of data they can't recreate.
-
-**Rule for future apps:**
-```
-RULE: Never fatalError on persistence initialization. Always provide
-      an in-memory fallback + user-visible alert. The app must remain
-      launchable even if the database is corrupt.
-```
-
-**Implementation pattern:**
-```swift
-do {
-    modelContainer = try ModelContainer(for: schema, configurations: [config])
-} catch {
-    // Fallback: in-memory store. App works but data won't persist.
-    let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-    modelContainer = try! ModelContainer(for: schema, configurations: [fallback])
-    // TODO: Show alert explaining data may need reset
-    SentrySDK.capture(error: error)
-}
-```
-
----
+**Rule:** Never `fatalError` on persistence init. Always provide in-memory fallback + user alert + Sentry capture.
 
 ### Pattern 5: Security Assumptions About On-Device Data
 
-**What happened:** Three separate security issues shared one root cause — assuming on-device data is tamper-proof:
+**What happened:** Three issues — `isPremium` in SwiftData (bypassable on jailbreak), Sentry `attachScreenshot = true` (captures health data), AppIntents accept unbounded input (poisoning HealthKit).
 
-1. **`isPremium` stored in SwiftData** — on jailbroken devices, users can flip this via SQLite editor and bypass the paywall
-2. **Sentry `attachScreenshot = true`** — captures weight, age, pregnancy status and uploads to third-party servers
-3. **AppIntents accept unbounded input** — Siri/Shortcuts can log -999 or 999,999 mL, poisoning HealthKit data visible to doctors
-
-**Why it's systemic:** iOS apps have a trust boundary between:
-- **Internal** (app code calling app code) — can trust
-- **External** (Siri parameters, local database fields for auth, data leaving the device) — cannot trust
-
-**Rules for future apps:**
-```
-RULE 1: Authorization state (premium, roles) must come from the
-        server (RevenueCat/StoreKit 2), not local storage. Local
-        storage is a cache, not a source of truth.
-
-RULE 2: Health data must never leave the device via crash reporting,
-        analytics screenshots, or debug logs. Audit every SDK's
-        default settings.
-
-RULE 3: All external input (AppIntents, URL schemes, widgets) must
-        be validated and clamped before persistence.
-```
-
-**Input validation pattern:**
-```swift
-static func clampedAmount(_ raw: Int) -> Int {
-    max(1, min(raw, 2000))  // 1 mL – 2 L
-}
-```
-
----
+**Rules:**
+1. Auth state from server (RevenueCat), not local storage
+2. Health data never leaves device via crash reporting screenshots
+3. All external input validated and clamped: `max(1, min(raw, 2000))`
 
 ### Pattern 6: Concurrency Hazards in Singletons
 
-**What happened:** `LocationManager` used a `CheckedContinuation` that could be resumed twice if both `didUpdateLocations` and `didFailWithError` fired. This causes a runtime crash: "SWIFT TASK CONTINUATION MISUSE."
+**What happened:** `LocationManager` CheckedContinuation could resume twice if both `didUpdateLocations` and `didFailWithError` fired. Runtime crash: "SWIFT TASK CONTINUATION MISUSE."
 
-Additionally, two concurrent calls to `getCurrentLocation()` would overwrite the stored continuation, leaking the first caller's task forever.
-
-**Why it's systemic:** Any singleton wrapping a delegate-based Apple API (CLLocationManager, CBCentralManager, NWPathMonitor) faces this exact pattern. Swift concurrency makes it easy to create continuations but doesn't enforce single-resume.
-
-**Rule for future apps:**
-```
-RULE: When wrapping delegate callbacks with CheckedContinuation:
-      1. Nil out the continuation BEFORE resuming (prevents double-resume)
-      2. Guard against concurrent requests (return nil or queue them)
-      3. Extract a private resume() helper to enforce exactly-once semantics
-```
-
-**Implementation pattern:**
-```swift
-private var continuation: CheckedContinuation<CLLocation?, Never>?
-private var isWaiting = false
-
-func getCurrentLocation() async -> CLLocation? {
-    guard !isWaiting else { return nil }
-    isWaiting = true
-    defer { isWaiting = false }
-
-    return await withCheckedContinuation { cont in
-        continuation = cont
-        manager.requestLocation()
-    }
-}
-
-private func resume(with location: CLLocation?) {
-    guard let cont = continuation else { return }
-    continuation = nil  // nil BEFORE resume
-    cont.resume(returning: location)
-}
-```
+**Rule:** Nil out continuation BEFORE resuming. Guard against concurrent requests. Extract a `resume()` helper for exactly-once semantics.
 
 ---
 
-## Pre-Ship Checklist (All Future Apps)
+## Phase-by-Phase Key Learnings
 
-Copy this into every new project's task list before App Store submission.
+### Phase 0: Market Research (30 min)
+
+**Tools used:** Appeeky MCP (`aso_full_audit`, `get_keyword_suggestions`), web search for competitor analysis.
+
+**Key findings:**
+- "water tracker" keyword: volume 82, difficulty medium — sweet spot
+- Competitor weakness: Waterllama users complain about "too many cute features, not enough function"; WaterMinder users want "simpler, cleaner"
+- Market gap: No competitor does science-backed hydration intelligence (net hydration, caffeine half-life, alcohol dehydration math)
+
+**ASO metadata (final):**
+- Title: "AquaLog - Water Tracker" (25 chars)
+- Subtitle: "Hydration & Drink Reminder" (26 chars)
+- Keywords: water, tracker, hydration, drink, reminder, daily, intake, goal, health, log, widget, habit, counter, record, fit (97 chars)
+
+**Rule:** Appeeky + 30 minutes of competitor 1-star review mining gives you everything you need. Don't over-research — validate in market.
+
+### Phase 1: Core MVP (2 hrs)
+
+**What was built:** SwiftData models (`WaterLog`, `UserSettings`), `DashboardView` with animated progress ring, `AddDrinkSheet`, `HistoryView` with weekly charts.
+
+**Architecture decisions made upfront:**
+1. SwiftData in App Group container (for future widget access)
+2. `@Observable` view models with stored properties
+3. Per-tab `NavigationStack`
+4. All user-facing strings via `String(localized:)`
+
+**Key learning — Progress ring rendering:**
+`AngularGradient` on progress ring looked wrong at small fill percentages (<15%). Switched to `LinearGradient`. **Rule:** Always test visual components at extreme values (0%, 5%, 50%, 100%).
+
+### Phase 2: Intelligence Engine (3 hrs)
+
+**5 services built:**
+1. `NutrientDatabase` — 23 beverages with caffeine, sugar, alcohol, hydration factors, calories
+2. `CaffeineTracker` — Half-life decay curve, sleep impact analysis
+3. `AlcoholCalculator` — BAC estimation, dehydration impact, recovery time
+4. `HydrationCalculator` — Personalized goals based on weight, gender, climate
+5. `HealthInsightsGenerator` — Weekly trends, personalized insights
+
+**Key decision — All pure Swift, no API dependencies:** Every calculation runs locally. No network calls, no loading states, no API costs. The intelligence IS the product.
+
+**Net hydration formula (the differentiator):**
+```
+netML = (volume × hydrationFactor) - sugarProcessingCost - alcoholDehydration
+sugarProcessingCost = sugarGrams × 1.0 mL
+alcoholDehydration = alcoholGrams × 10.0 mL
+waterDebt = max(0, volume - netML)
+```
+
+### Phase 3: Multi-Surface (2 hrs)
+
+**Built:** 3 widget sizes (small/medium/lock screen), Control Center widget (iOS 18), Watch app + complication, AppIntents (Siri/Shortcuts), Live Activity.
+
+**AppIntents first, everything else is free.** One `LogDrinkIntent` powers:
+- Home Screen widget tap → logs 250mL water
+- Control Center widget → logs 250mL water
+- Siri: "Log a glass of water" → logs via intent
+- Shortcuts app → automation triggers
+
+**Widget timer display:** Use `Text(date, style: .timer)` for countdowns — Apple renders it, zero CPU cost, always accurate even after app termination.
+
+**Critical bug found later (Pattern 1):** Widget intents only wrote to UserDefaults, not SwiftData. Caught in code review, not in testing. **Rule:** Integration test after building any multi-surface feature: log from widget, verify in main app history.
+
+### Phase 4: Onboarding + Paywall (1.5 hrs)
+
+**Onboarding:** 3-page `SmartOnboardingView` — welcome, feature highlight, goal setup.
+
+**Paywall:** `PaywallView` with RevenueCat integration. 6 premium features advertised:
+1. Health Timeline
+2. Alcohol Calculator
+3. Caffeine Tracker
+4. Weekly Body Report
+5. Export Data (CSV)
+6. 23+ Beverages with full nutrition data
+
+**RevenueCat setup:**
+- Project: RightBehind
+- Entitlement: "premium"
+- Products: monthly ($3.99), yearly ($29.99), lifetime ($49.99)
+- API key in `StoreManager` (should be in xcconfig — Pattern 3 finding)
+
+### Phase 5: Code Review (4 hrs)
+
+**8-agent review uncovered 21 issues across 20 files.** This was the highest-ROI phase — estimated 40-80 hours of production firefighting prevented.
+
+| Category | Count |
+|----------|-------|
+| Data loss | 5 |
+| Security | 5 |
+| Reliability | 4 |
+| Performance | 3 |
+| Standards | 3 |
+| Testing | 1 |
+
+**12 P1 issues fixed in first PR** (317 lines added, 110 removed).
+
+**Key insight:** The 6 patterns that emerged are portable to every iOS app. They're documented in `docs/COMPOUND_REPORT.md` and should be checked against at the start of every new project.
+
+### Phase 6: QA Testing + TestFlight (3 hrs)
+
+**10 bugs fixed in QA session.** Then TestFlight upload validation errors:
+
+**TestFlight rejection lessons (now in `templates/TESTFLIGHT_CHECKLIST.md`):**
+
+1. **`CODE_SIGN_IDENTITY = "iPhone Developer"` hardcoded** → Forces development signing even during archive. Remove it; let automatic signing pick the right identity.
+2. **Widget extension missing `DEVELOPMENT_TEAM`** → Add explicitly to each target's Debug and Release configs.
+3. **`CFBundleDisplayName` missing in widget Info.plist** → Extensions with `GENERATE_INFOPLIST_FILE = NO` need it in their actual plist.
+4. **iPad orientations** → Must include all 4 orientations if `TARGETED_DEVICE_FAMILY` includes iPad.
+5. **App icon with alpha channel** → Flatten with PIL: open as RGBA, paste onto white RGB, save.
+6. **Sentry dSYM warning** → Non-blocking. "Upload Symbols Failed" for Sentry.framework is just about Sentry's own symbolication.
+
+**Build number lesson:** Build 6 rejected with `ITMS-90189` (duplicate). Must increment `CURRENT_PROJECT_VERSION` before every archive. Use `agvtool new-version -all N`.
+
+### Phase 7: Premium Gating Fix (1 hr)
+
+**Bug:** Premium beverages (espresso, latte, green tea, herbal tea, smoothie, diet soda, energy drink) could be added without paying. The lock icon was purely cosmetic — tapping a locked beverage selected it, and the Add button worked.
+
+**Fix:** Three-layer defense (see Architecture Decision #5 above).
+
+**Also fixed:**
+- Orange Juice icon: `carrot.fill` → `waterbottle.fill` (wrong SF Symbol)
+- Added 5 new premium juice options: Apple Juice, Grape Juice, Cranberry Juice, Lemonade, Pineapple Juice
+- Smart category auto-select (see Architecture Decision #6)
+
+---
+
+## Cross-Phase Recurring Bug Patterns
+
+### Pattern A: Cosmetic-Only Feature Gating (Phases 4, 7)
+
+Lock icons, grayed text, and disabled states that don't actually prevent the action. Found twice:
+1. Premium beverages selectable despite lock icon
+2. Category auto-select landing on locked items with no explanation
+
+**Rule:** Every locked feature must intercept the action AND present the paywall. Cosmetic indicators supplement but never replace behavioral gates.
+
+### Pattern B: Silent Error Swallowing (Phases 1, 5)
+
+`try?` and empty `catch {}` blocks on user-critical paths (saves, fetches) that silently lose data.
+
+**Rule:** All user-initiated saves and SwiftData fetches use explicit `do/catch` + Sentry capture + `.alert(error:)`.
+
+### Pattern C: Enum vs Database Evolution (Phases 1, 2, 7)
+
+Started with `Beverage` enum (8 cases), evolved to `NutrientDatabase` (23+ profiles), had to maintain backward compatibility via `displayInfo(for:)` bridge.
+
+**Rule:** If the domain has >10 items or rich metadata, start with a struct database from day one. Enums are for fixed, small sets.
+
+### Pattern D: TestFlight Validation Surprises (Phase 6)
+
+Every issue in Phase 6 was invisible during local development. They only surfaced at archive/upload time.
+
+**Rule:** Run the TestFlight checklist before the first archive of any new app. Most validation errors only appear at upload, not at build.
+
+---
+
+## Services Inventory (13 Core Services)
+
+| Service | Purpose | Reusable? |
+|---------|---------|-----------|
+| `StoreManager` | RevenueCat subscription handling | ✅ Swap product IDs |
+| `HealthKitManager` | Apple Health read/write | ✅ As-is |
+| `NotificationManager` | Local push notifications | ✅ As-is |
+| `SmartNotificationManager` | Adaptive reminder timing | ⚠️ App-specific logic |
+| `NutrientDatabase` | 23+ beverage profiles with nutrition | ⚠️ Domain-specific |
+| `HydrationCalculator` | Personalized hydration goals | ⚠️ Domain-specific |
+| `CaffeineTracker` | Caffeine half-life tracking | ⚠️ Domain-specific |
+| `AlcoholCalculator` | Dehydration + BAC estimation | ⚠️ Domain-specific |
+| `HealthInsightsGenerator` | Weekly analytics + insights | ⚠️ App-specific |
+| `LiveActivityManager` | Dynamic Island + Lock Screen | ✅ Pattern reusable |
+| `LocationManager` | Temperature-based adjustments | ✅ Pattern reusable |
+| `WorkoutDetector` | Activity recognition | ⚠️ Domain-specific |
+| `AppIntents` | Siri + Shortcuts + widget actions | ✅ Pattern reusable |
+
+---
+
+## Screens Inventory (9 Main Screens)
+
+| Screen | Tab | Features |
+|--------|-----|----------|
+| `DashboardView` | Dashboard | Animated progress ring, quick-add buttons, today's drink log |
+| `AddDrinkSheet` | (Sheet) | Category filter, beverage grid with premium gating, hydration intelligence, amount picker |
+| `HistoryView` | Analytics | Weekly bar charts, daily breakdown, trend analysis |
+| `CaffeineChartView` | Analytics | Caffeine intake visualization, half-life decay |
+| `HealthTimelineView` | Analytics | Comprehensive health event timeline |
+| `BodyReportView` | Analytics | Body metrics, hydration analysis |
+| `AlcoholImpactView` | Analytics | Dehydration analysis, BAC, recovery time |
+| `SettingsView` | Settings | Goals, units, reminders, premium upsell, export |
+| `SmartOnboardingView` | (Modal) | 3-page welcome, goal picker, unit selection |
+| `PaywallView` | (Sheet) | Premium features, pricing tiers, trial CTA |
+
+**Components:**
+- `ProgressRingView` — Custom animated circular progress indicator
+- `LegalTextView` — Privacy/terms disclaimers
+- `MainTabView` — Tab navigation container (Dashboard/Analytics/Settings)
+
+---
+
+## Widget & Watch Targets
+
+**Home Screen Widgets (WidgetKit):**
+- Small: Progress ring + percentage
+- Medium: Progress ring + intake/goal + quick-add button
+- Lock Screen: Circular gauge (iOS 16+)
+
+**Control Center Widget (iOS 18):**
+- Water drop icon + 1-tap quick log
+
+**Apple Watch (watchOS 10+):**
+- `WatchDashboardView` — Simplified hydration UI with large "+" button
+- `WatchComplication` — Progress ring + current intake on watch face
+
+**Live Activity:**
+- Dynamic Island compact/expanded showing hydration progress
+- Lock Screen Live Activity with progress bar
+
+---
+
+## Pre-Launch Checklist (Built from All Phases)
 
 ### Data Integrity
-- [ ] Every entry point (main app, widget, Siri, Watch) writes to the same persistence layer
+- [ ] Every entry point (main app, widget, Siri, Watch) writes to shared SwiftData
 - [ ] No silent `catch {}` blocks on save/delete operations
-- [ ] UserDefaults is a cache/sync mechanism, not the source of truth for user data
-- [ ] `fatalError` is never used in persistence initialization
-- [ ] Schema migration strategy is documented and tested
+- [ ] UserDefaults is a cache, not source of truth for user data
+- [ ] `fatalError` never used in persistence initialization
+- [ ] Schema migration strategy documented and tested
 
 ### Security & Privacy
-- [ ] No API keys or DSNs hardcoded as string literals (use xcconfig/Info.plist)
+- [ ] No API keys hardcoded as string literals (use xcconfig/Info.plist)
 - [ ] DEBUG and RELEASE use different service keys
-- [ ] Crash reporting SDK does NOT capture screenshots of health/financial data
-- [ ] Authorization state comes from server, not local database
-- [ ] All external input (Siri, Shortcuts, URL schemes) is validated and clamped
-- [ ] `PrivacyInfo.xcprivacy` accurately reflects actual data usage
-- [ ] SwiftData store excluded from iCloud backup if it contains health data
+- [ ] Crash reporting does NOT capture screenshots of health data
+- [ ] Authorization state from RevenueCat, not local database
+- [ ] All external input (Siri, Shortcuts, widgets) validated and clamped
+- [ ] `PrivacyInfo.xcprivacy` accurately reflects data usage
+
+### Premium Gating
+- [ ] Every locked feature intercepts the action (not just shows an icon)
+- [ ] Tapping a locked item presents `PaywallView`
+- [ ] Category/list auto-select never lands on a locked item for free users
+- [ ] Add/submit buttons redirect to paywall when premium is required
+- [ ] Premium state cached in UserDefaults for offline grace
 
 ### Reliability
 - [ ] Persistence init has graceful fallback (in-memory store)
-- [ ] Offline mode tested: premium features work without network (cache entitlements)
+- [ ] Offline mode tested: premium features work without network
 - [ ] CheckedContinuation wrappers have exactly-once resume semantics
-- [ ] No concurrent access to shared continuation/callback state
 
 ### Performance
 - [ ] SwiftData queries use date predicates (no unbounded full-table loads)
-- [ ] `onAppear` setup is guarded to run expensive work only once per session
-- [ ] DateFormatters are static/cached, not allocated per call
-- [ ] Background computations are off `@MainActor`
+- [ ] Computed properties in views captured as `let`, not recomputed per render
+- [ ] DateFormatters are static/cached
 
-### Standards & Accessibility
-- [ ] `Localizable.xcstrings` exists with all user-facing strings
+### Accessibility & Standards
 - [ ] Every interactive element has `.accessibilityLabel()`
-- [ ] Dynamic Type supported (no hardcoded font sizes without `.minimumScaleFactor`)
+- [ ] Dynamic Type supported (no hardcoded sizes without `.minimumScaleFactor`)
 - [ ] Dark Mode tested on every screen
-- [ ] No UIKit when SwiftUI equivalent exists (`ShareLink` not `UIActivityViewController`)
+- [ ] All user-facing strings via `String(localized:)`
 
-### Testing
-- [ ] Unit tests exist for: persistence operations, business logic (streaks, calculations), input validation
-- [ ] Integration test: log from each surface, verify in main app
-- [ ] Edge cases: midnight boundary, timezone change, offline, empty state, maximum data
-
----
-
-## Architecture Decision: Shared Persistence for Multi-Surface Apps
-
-The most impactful lesson from this review is architectural. Every iOS app with widgets, Siri, or Watch support needs a **shared persistence layer from day one**.
-
-```
-                    ┌──────────────────────────────────┐
-                    │         App Group Container       │
-                    │                                   │
-                    │  ┌─────────────────────────────┐  │
-                    │  │   SwiftData ModelContainer   │  │
-                    │  │   (single source of truth)   │  │
-                    │  └──────────┬──────────────────┘  │
-                    │             │                      │
-                    └─────────────┼──────────────────────┘
-                                  │
-           ┌──────────┬───────────┼───────────┬──────────┐
-           │          │           │           │          │
-      ┌────▼───┐ ┌───▼────┐ ┌───▼────┐ ┌───▼────┐ ┌──▼───┐
-      │Main App│ │Widget  │ │  Siri  │ │Control │ │Watch │
-      │        │ │Intent  │ │Intent  │ │Center  │ │  App │
-      └────────┘ └────────┘ └────────┘ └────────┘ └──────┘
-           │          │           │           │          │
-           └──────────┴───────────┼───────────┴──────────┘
-                                  │
-                    ┌─────────────▼──────────────────┐
-                    │   Shared LogDrinkService        │
-                    │   - validate input              │
-                    │   - write SwiftData             │
-                    │   - update HealthKit            │
-                    │   - refresh widgets             │
-                    │   - return Result<Success,Error>│
-                    └────────────────────────────────┘
-```
-
-**Key principle:** The `LogDrinkService` (or equivalent for other apps) is a plain Swift struct/class — no UI dependencies, no ViewModel coupling. It can be called from any process. It validates, persists, syncs, and returns a `Result` so each caller can handle success/failure appropriately for its surface.
+### TestFlight Upload
+- [ ] No hardcoded `CODE_SIGN_IDENTITY` — let automatic signing work
+- [ ] `DEVELOPMENT_TEAM` set on every target (main app + extensions)
+- [ ] `CFBundleDisplayName` in all extension Info.plists
+- [ ] iPad orientations include all 4
+- [ ] App icon has no alpha channel (`sips -g hasAlpha`)
+- [ ] Build number incremented (`agvtool new-version -all N`)
 
 ---
 
-## Metrics from This Review
+## File Organization Reference
+
+```
+AquaLog/
+├── App/
+│   └── AquaLogApp.swift              # @main, Sentry + RevenueCat init
+├── Models/
+│   ├── BeverageType.swift             # Legacy enum + NutrientDatabase bridge
+│   ├── WaterLog.swift                 # @Model — drink entries
+│   ├── UserSettings.swift             # @Model — goals, units, preferences
+│   └── HydrationActivityAttributes.swift  # Live Activity data
+├── ViewModels/
+│   └── DashboardViewModel.swift       # @Observable, stored properties
+├── Views/
+│   ├── Screens/
+│   │   ├── DashboardView.swift        # Main hydration dashboard
+│   │   ├── HistoryView.swift          # Weekly charts + daily breakdown
+│   │   ├── SettingsView.swift         # Goals, reminders, premium
+│   │   ├── CaffeineChartView.swift    # Caffeine visualization
+│   │   ├── HealthTimelineView.swift   # Health event timeline
+│   │   ├── BodyReportView.swift       # Body metrics
+│   │   └── AlcoholImpactView.swift    # Alcohol dehydration analysis
+│   ├── Components/
+│   │   ├── ProgressRingView.swift     # Animated circular progress
+│   │   └── LegalTextView.swift        # Privacy/terms text
+│   ├── Dashboard/
+│   │   └── MainTabView.swift          # Tab navigation
+│   ├── Onboarding/
+│   │   └── SmartOnboardingView.swift  # 3-page onboarding
+│   └── Paywall/
+│       └── PaywallView.swift          # Premium subscription UI
+├── Services/                          # 13 services (see inventory above)
+├── Extensions/
+│   ├── Date+Helpers.swift
+│   └── Int+Volume.swift
+├── Resources/
+│   └── Assets.xcassets/
+├── AquaLogWatch/                      # watchOS target
+├── AquaLogWidgets/                    # Widget + Live Activity extension
+└── AquaLogTests/
+```
+
+---
+
+## Key Metrics
 
 | Metric | Value |
 |--------|-------|
-| Files reviewed | 20 |
-| Issues found | 21 (12 P1, 7 P2, 2 P3) |
-| Issues fixed in first PR | 12 (across all 20 files) |
-| Lines changed | 317 added, 110 removed |
-| Estimated time saved vs. finding in production | 40-80 hours of firefighting |
-| Categories | Data loss (5), Security (5), Reliability (4), Performance (3), Standards (3), Testing (1) |
+| Swift files | 49 (36 main, 3 watch, 4 widgets, 1 test, 5 templates) |
+| Lines of code | ~2,300 (main app) |
+| App size | 2.8 MB |
+| Services | 13 |
+| Screens | 9 main + 4 sub-screens |
+| Beverage profiles | 28 (6 free, 22 premium) |
+| Code review issues | 21 (12 P1, 7 P2, 2 P3) |
+| QA bugs fixed | 10 |
+| PRs merged | 6 |
+| TestFlight builds | 7 |
+| Development time | ~17 hours across 2 weeks |
+| Estimated firefighting prevented | 40-80 hours |
 
 ---
 
-## Remaining Work
+## Comparison with FastTrack Build
 
-These issues were **not** fixed in the initial PR and should be addressed before App Store submission:
+| Aspect | AquaLog | FastTrack |
+|--------|---------|-----------|
+| Category | Health & Fitness (hydration) | Health & Fitness (fasting) |
+| Phase count | 8 (informal → structured) | 8 formal phases |
+| Development time | ~17 hrs | TBD |
+| Code review structure | Post-hoc 8-agent review | Per-phase structured review |
+| Bug tracking | Compound report + QA session | Numbered todos (013-067) |
+| Domain complexity | Medium (nutrient calculations) | Medium (timer + zones) |
+| Widget pattern | AppIntents first ✅ | AppIntents first ✅ (confirmed) |
+| Timer pattern | N/A (CRUD app) | `startDate` persistence + `Text(date, style: .timer)` |
+| Paywall | RevenueCat | Native StoreKit 2 |
+| Premium gating | Defense-in-depth (3 layers) | `GatedContent` wrapper view |
+| Strict concurrency | Partially addressed | Fully addressed |
+| Onboarding | 3-page `SmartOnboardingView` | 7-screen `ZStack/switch` |
+| Test coverage | Minimal (noted as P1) | 17 tests from Phase 1 |
+| Key differentiator | Net hydration intelligence | Zone-aware fasting science |
 
-| # | Issue | Priority | Effort |
-|---|-------|----------|--------|
-| 002 | Streak logic correctness (stale reads, delete doesn't repair, midnight edge) | P1 | 2-3h |
-| 005 | Remaining silent save failures (revert UI on error) | P1 | 1-2h |
-| 007 | Zero test coverage for business logic | P1 | 8-16h |
-| 009 | Unbounded SwiftData queries in 4 views | P1 | 2-3h |
-| 012 | UIKit usage + force unwraps in production code | P1 | 1-2h |
-| 014 | Accessibility labels + Localizable.xcstrings | P2 | 3-4h |
-| 016 | PrivacyInfo.xcprivacy accuracy + iCloud backup exclusion | P2 | 1h |
-| 017 | Setup performance (guard duplicate HealthKit calls) — partially fixed | P2 | 1h |
-| 018 | 4 views missing ViewModels (MVVM violation) | P2 | 4-6h |
-| 020 | Performance micro-optimizations (DateFormatter, MainActor) | P3 | 2h |
-| 021 | Dead code cleanup + file organization | P3 | 3-4h |
+---
+
+## Templates to Carry Forward
+
+These files from AquaLog are reusable with minimal changes:
+
+| File | Reuse Level |
+|------|-------------|
+| `StoreManager.swift` | Full reuse — swap product IDs and API key |
+| `HealthKitManager.swift` | Full reuse — swap HealthKit data types |
+| `NotificationManager.swift` | Full reuse — swap notification content |
+| `LiveActivityManager.swift` | Pattern — swap activity attributes |
+| `AppIntents.swift` | Pattern — swap intent parameters and persistence calls |
+| `PaywallView.swift` | Pattern — swap feature list and pricing |
+| `SmartOnboardingView.swift` | Pattern — swap pages and goal setup |
+| `ProgressRingView.swift` | Full reuse — configurable colors and progress |
+| `AddDrinkSheet.swift` premium gating | Pattern — 3-layer defense applicable to any gated content |
+| `NutrientDatabase.swift` structure | Pattern — static database with O(1) lookup and category filtering |
+
+---
+
+## What to Decide Before Writing Code (Updated)
+
+Run through these decisions at the start of every new app:
+
+1. **Data model at scale.** Will you have 10+ items with rich metadata? → Start with a struct database, not an enum.
+2. **Multi-surface from day one?** → Plan App Group container + shared persistence function before writing any view.
+3. **Premium gating strategy.** → Defense-in-depth: intercept action + redirect to paywall + disable button as safety net. Never cosmetic-only.
+4. **StoreKit 2 native or RevenueCat?** → RevenueCat recommended for faster iteration. Design `StoreManager` interface to be swappable regardless.
+5. **What's the intelligence angle?** → Pure Swift calculations that run locally differentiate without API costs. (AquaLog: net hydration. FastTrack: fasting zones.)
+6. **Notification permission timing?** → After first value event, not during onboarding.
+7. **TestFlight checklist.** → Run `templates/TESTFLIGHT_CHECKLIST.md` before first archive. Every item was invisible during local development.
+
+---
+
+## Remaining Work Before Launch
+
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 1 | Streak logic correctness (stale reads, midnight edge) | P1 | 2-3h |
+| 2 | Remaining silent save failures (revert UI on error) | P1 | 1-2h |
+| 3 | Unit test coverage for business logic | P1 | 8-16h |
+| 4 | Bounded SwiftData queries in 4 views | P1 | 2-3h |
+| 5 | UIKit usage + force unwraps in production code | P1 | 1-2h |
+| 6 | Accessibility labels + Localizable.xcstrings | P2 | 3-4h |
+| 7 | PrivacyInfo.xcprivacy accuracy | P2 | 1h |
+| 8 | 4 views missing ViewModels (MVVM violation) | P2 | 4-6h |
+| 9 | Performance micro-optimizations (DateFormatter, MainActor) | P3 | 2h |
+| 10 | Dead code cleanup + file organization | P3 | 3-4h |
+| 11 | App Store submission + ASO campaign setup | P1 | 2h |
 
 ---
 
 ## Key Takeaway
 
-> **The fastest way to ship reliable iOS apps is to get the persistence architecture right on day one.** Every bug in this review traces back to one of two root causes: data not flowing through a single canonical path, or trust boundaries not being respected. Fix the architecture, and the entire class of bugs disappears.
+> **The fastest way to ship reliable iOS apps is to get two things right on day one: the persistence architecture and the premium gating.** AquaLog's bugs split cleanly into data-not-flowing-through-a-canonical-path and gates-that-don't-actually-gate. Fix the architecture, block the actions, and the entire class of bugs disappears.
 
-The 6 patterns documented here are portable. Copy the pre-ship checklist into every new project. Run an 8-agent review before every App Store submission. Compound the lessons; don't relearn them.
+The 6 bug patterns and the premium gating defense-in-depth pattern documented here are portable. Copy the pre-launch checklist into every new project. Run an 8-agent review before every submission. Compound the lessons.
+
+---
+
+*Generated April 14, 2026. Covers Phases 0–7, 15 commits, 6 PRs. Phase 8 (App Store submission + launch marketing) pending.*
